@@ -12,18 +12,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: frontend # Убедиться, что мы работаем именно с веткой 'frontend'
+          ref: frontend
 
       - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
-          node-version: '20.19.2' # Используйте версию Node.js, необходимую для Vite
+          node-version: '20.19.2'
 
       - name: Install dependencies
         run: npm install
 
       - name: Build the project (Vite)
-        run: npm run build # Убедитесь, что эта команда запускает сборку (обычно 'npm run build')
+        run: npm run build
 
       - name: Deploy to Server via SSH
         uses: appleboy/scp-action@v0.1.7
@@ -31,9 +31,9 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "dist/*" # Папка, куда Vite собирает готовые файлы (обычно 'dist')
-          target: "/home/app/frontend-app" # Путь на сервере, куда нужно скопировать файлы
-          strip_components: 1 # Убрать папку 'dist' из пути при копировании
+          source: "dist/*" 
+          target: "/home/app/frontend-app" 
+          strip_components: 1 # ||| sudo systemctl restart nginx
 
       - name: Restart Nginx Service (Optional but Recommended)
         uses: appleboy/ssh-action@v1.0.1
@@ -42,5 +42,4 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            sudo systemctl restart nginx
             echo "Deployment successful and Nginx restarted!"
