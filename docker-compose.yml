@@ -1,0 +1,40 @@
+services:
+  # Сервис ИИ модели
+  ai-model:
+    build: 
+      context: ./ai_model
+      dockerfile: Dockerfile.model
+    container_name: ai-model-service
+    ports:
+      - "11434:11434"  # Ollama
+      - "8001:8001"    # Proxy API
+    volumes:
+      - ./models:/app/models
+      - model_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Бэкенд приложение
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.backend
+    container_name: business-assistant-backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - ai-model
+    environment:
+      - MODEL_SERVICE_URL=http://ai-model:8001
+    restart: unless-stopped
+    volumes:
+      - ./backend:/app
+
+volumes:
+  model_data:
