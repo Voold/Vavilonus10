@@ -1,0 +1,45 @@
+name: Deploy Frontend to Production
+
+on:
+  push:
+    branches:
+      - frontend # Запускать, только когда происходит push в ветку 'frontend'
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: frontend
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.2'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the project (Vite)
+        run: npm run build
+
+      - name: Deploy to Server via SSH
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "dist/*" 
+          target: "/home/app/frontend-app" 
+          strip_components: 1
+
+      - name: Restart Nginx Service (Optional but Recommended)
+        uses: appleboy/ssh-action@v1.0.1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "Deployment successful!"
