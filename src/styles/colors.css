@@ -1,0 +1,33 @@
+:root {
+  --only-black: rgb(0, 0, 0);
+  --only-white: rgb(255, 255, 255);
+
+  --main-bc: rgb(249, 250, 251);
+  --sub-bc: rgb(255, 255, 255);
+  --title-color: rgb(8, 8, 8);
+  --text-color: rgb(31, 31, 31);
+
+  --color-black: rgb(0, 0, 0);
+  --color-white: rgb(255, 255, 255);
+
+  --color-gray:rgb(226, 228, 231);
+
+  --color-red: rgb(219, 38, 37);
+  --light-green: rgb(40, 190, 70);
+
+  --dark-green: rgb(22, 101, 52);
+  --dark-red: rgb(173, 1, 1);
+}
+
+body.dark-theme {
+  --main-bc: rgb(12, 10, 9);
+  --sub-bc: rgb(28, 25, 23);
+  --title-color: rgba(233, 233, 233);
+  --text-color: rgb(196, 197, 197);
+
+  --color-white: rgb(0, 0, 0);
+  --color-black: rgb(255, 255, 255);
+  --color-gray: rgb(55, 65, 81);
+}
+
+

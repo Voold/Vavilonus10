@@ -1,14 +1,53 @@
-import './App.css'
-import Logo from '../public/logo.svg'
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useTheme } from './hooks/useTheme.ts';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { MainLayout } from './layouts/MainLayout';
+import { LoginPage } from './pages/LoginPage';
+import { ChatWorkspace } from './pages/workspaces/ChatWorkspace';
+/* import { DataVizWorkspace } from './pages/workspaces/DataVizWorkspace';
+import { SettingsPage } from './pages/workspaces/SettingsPage'; */
+import styles from './styles/App.module.css';
+import { HomeWorkspace } from './pages/workspaces/HomeWorkspace.tsx';
 
-function App() {
+// ====================================================================
+// Main Application Component
+// ====================================================================
+
+const App: React.FC = () => {
+  // Инициализируем управление темой (применяет класс к <html>)
+  useTheme();
 
   return (
-    <div className={''}><img className='logo' src={Logo}></img>
-      <h1>ТУТ БУДЕТ ФРОНТЕНД</h1>
-      <h2>Vavilonus10 || React && TS</h2>
-    </div>
-  )
-}
+    <div className={styles.app}>
+      <BrowserRouter>
+        <Routes>
+          {/* Маршруты, не требующие авторизации */}
+          <Route path="/login" element={<LoginPage />} />
+          {/* Placeholder for OAuth Callback - handles redirect logic */}
+          <Route path="/oauth-callback" element={<Navigate to="/home" replace />} /> 
 
-export default App
+          {/* Защищенные маршруты, использующие MainLayout */}
+          <Route 
+            path="/" 
+            element={<ProtectedRoute element={<MainLayout />} />}
+          >
+            {/* Default Route: Redirect to Chat */}
+            <Route index element={<Navigate to="home" replace />} /> 
+
+            {/* Рабочие Пространства (Вложенные маршруты) */}
+            <Route path="home" element={<HomeWorkspace />} />
+            <Route path="chat" element={<ChatWorkspace />} />
+    {/*         <Route path="data-viz" element={<DataVizWorkspace />} />
+            <Route path="settings" element={<SettingsPage />} /> */}
+
+            {/* 404 Not Found (редирект на чат) */}
+            <Route path="*" element={<Navigate to="/home" replace />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </div>
+  );
+};
+
+export default App;
