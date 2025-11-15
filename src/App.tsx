@@ -8,7 +8,7 @@ import { ChatWorkspace } from './pages/workspaces/ChatWorkspace';
 import { SettingsPage } from './pages/workspaces/SettingsPage'; */
 import styles from './styles/App.module.css';
 import { HomeWorkspace } from './pages/workspaces/HomeWorkspace.tsx';
-import { MarketingWorkspace } from './pages/workspaces/MarketingWorkspace.tsx';
+/* import { MarketingWorkspace } from './pages/workspaces/MarketingWorkspace.tsx'; */
 import { AuthPage } from './pages/AuthPage.tsx';
 import { SettingsWorkspace } from './pages/workspaces/SettingsWorkspace.tsx';
 import ChatWithActions from './pages/workspaces/ChatWithActionsWorkspace.tsx';

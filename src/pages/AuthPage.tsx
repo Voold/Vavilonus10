@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { LogIn, UserPlus, AlertTriangle } from 'lucide-react';
 import styles from '../styles/AuthPage.module.css'; 
 // Предполагаем, что useAuthStore и типы импортированы корректно

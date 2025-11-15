@@ -8,7 +8,7 @@ import type {
     UserDel, 
     UserCompanyAdd,
     LoginData, 
-    UserProfileResponse
+/*     UserProfileResponse */
 } from '../api/authAPI';
 
 
@@ -155,7 +155,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ isLoading: true, error: null });
         try {
             // Шаг 1: Аутентификация
-            const loginResponse = await userApiService.loginUser(loginData);
+            await userApiService.loginUser(loginData);
             // Здесь можно сохранить токен, если он есть: localStorage.setItem('token', loginResponse.data.token);
 
             // Шаг 2: Получение профиля (используем ИНН для получения данных)
