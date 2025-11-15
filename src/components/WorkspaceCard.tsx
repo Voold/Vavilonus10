@@ -1,17 +1,16 @@
 import React from 'react';
-import { useTheme } from '../hooks/useTheme';
-import styles from '../styles/App.module.css'; // Импорт стилей
+import styles from '../styles/WorkspaceCard.module.css';
 
-// Общая обертка для рабочих пространств
-export const WorkspaceCard: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => {
-    const { theme } = useTheme();
-    const isDark = theme === 'dark';
+interface WorkspaceCardProps {
+  title: string;
+  children: React.ReactNode;
+}
 
-    
-    return (
-        <div>
-            <h2>{title}</h2>
-            <div >{children}</div>
-        </div>
-    );
-};
+export const WorkspaceCard: React.FC<WorkspaceCardProps> = ({ title, children }) => (
+  <div className={styles.cardWrapper}>
+    <h1 className={styles.cardTitle}>{title}</h1>
+    <div className={styles.cardContent}>
+      {children}
+    </div>
+  </div>
+);

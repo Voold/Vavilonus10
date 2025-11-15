@@ -1,0 +1,13 @@
+.wrap {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+}
+
+.wrap aside {
+  width: 25%;
+}
+
+.wrap main {
+  width: 75%;
+}

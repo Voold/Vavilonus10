@@ -1,0 +1,120 @@
+/* --- Используем переменные из WorkspaceCard.module.css --- */
+
+.settingsForm {
+    max-width: 600px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.innLabel {
+    font-size: 1rem;
+    color: var(--sub-title-color);
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    font-weight: 500;
+}
+
+.innValue {
+    font-weight: 700;
+    color: var(--title-color);
+    margin-left: 10px;
+}
+
+.innHint {
+    font-size: 0.8rem;
+    color: var(--sub-title-color);
+    margin-left: 15px;
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.inputField {
+    padding: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    font-size: 1rem;
+    color: var(--text-color);
+    background-color: var(--only-white);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.inputField:focus {
+    outline: none;
+    border-color: rgba(20, 150, 100, 0.7); /* Примерный акцентный цвет */
+    box-shadow: 0 0 0 2px rgba(20, 150, 100, 0.2);
+}
+
+.saveButton {
+    padding: 12px 20px;
+    background-color: var(--primary-color, rgb(20, 150, 100));
+    color: var(--only-white);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.saveButton:hover:not(:disabled) {
+    background-color: var(--dark-primary, rgb(15, 120, 80));
+}
+
+.saveButton:disabled {
+    background-color: var(--sub-title-color);
+    cursor: not-allowed;
+}
+
+/* --- Сообщения о статусе --- */
+.statusMessage {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-top: 10px;
+}
+
+.success {
+    background-color: rgba(20, 150, 100, 0.1); /* Светло-зеленый */
+    color: var(--primary-color, rgb(20, 150, 100));
+    border: 1px solid rgba(20, 150, 100, 0.3);
+}
+
+.error {
+    background-color: rgba(219, 38, 37, 0.1); /* Светло-красный */
+    color: var(--color-red);
+    border: 1px solid rgba(219, 38, 37, 0.3);
+}
+
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loadingText {
+    color: var(--sub-title-color);
+    text-align: center;
+    padding: 20px;
+}

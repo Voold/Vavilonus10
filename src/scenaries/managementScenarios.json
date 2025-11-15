@@ -1,0 +1,11 @@
+[
+    {
+        "id": "management_1",
+        "name": "Анализ рисков проекта",
+        "steps": [
+            { "modelPrompt": "Введите название проекта:", "paramName": "project_name" },
+            { "modelPrompt": "Введите потенциальные риски через запятую:", "paramName": "risks" }
+        ],
+        "finalPromptTemplate": "Проанализируй риски ${risks} для проекта \"${project_name}\" и предложи план их минимизации."
+    }
+]

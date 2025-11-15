@@ -1,0 +1,21 @@
+[
+    {
+        "id": "finance_1",
+        "name": "Прогноз доходов",
+        "steps": [
+            { "modelPrompt": "Введите период прогнозирования (например, '6 месяцев'):", "paramName": "period" },
+            { "modelPrompt": "Введите текущую ежемесячную выручку (например, '100000'):", "paramName": "current_revenue" },
+            { "modelPrompt": "Введите ожидаемый ежемесячный рост в процентах (например, '5'):", "paramName": "growth_rate" }
+        ],
+        "finalPromptTemplate": "Сформируй прогноз доходов на ${period} месяцев, исходя из текущей выручки ${current_revenue} и ожидаемого роста ${growth_rate}%. Дай детальный отчет."
+    },
+    {
+        "id": "finance_2",
+        "name": "Расчет рентабельности",
+        "steps": [
+            { "modelPrompt": "Введите общую выручку (например, '500000'):", "paramName": "total_revenue" },
+            { "modelPrompt": "Введите общие расходы (например, '300000'):", "paramName": "total_expenses" }
+        ],
+        "finalPromptTemplate": "Рассчитай чистую рентабельность (Net Profit Margin) при выручке ${total_revenue} и расходах ${total_expenses}."
+    }
+]

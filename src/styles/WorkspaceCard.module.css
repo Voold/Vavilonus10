@@ -1,0 +1,22 @@
+
+.cardWrapper {
+  flex-grow: 1;
+  padding: 30px;
+  background-color: var(--main-bc);
+}
+
+.cardTitle {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--title-color);
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.cardContent {
+  padding: 30px;
+  background-color: var(--sub-bc);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}

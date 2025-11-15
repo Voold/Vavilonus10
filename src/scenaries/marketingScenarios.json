@@ -1,0 +1,11 @@
+[
+    {
+        "id": "marketing_1",
+        "name": "План контента в соцсетях",
+        "steps": [
+            { "modelPrompt": "Введите целевую платформу (например, 'Instagram'):", "paramName": "platform" },
+            { "modelPrompt": "Введите целевую аудиторию:", "paramName": "audience" }
+        ],
+        "finalPromptTemplate": "Создай 5 идей для контента на ${platform} для целевой аудитории: ${audience}."
+    }
+]

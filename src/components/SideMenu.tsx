@@ -1,66 +1,49 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Sun, Moon, MessageSquare, BarChart3, Settings } from 'lucide-react';
-import { useTheme } from '../hooks/useTheme.ts';
-import styles from '../styles/SideMenu.module.css'; // Импорт стилей
+import styles from '../styles/SideMenu.module.css';
+import {Logo} from './ui/Logo.tsx'
+import { SideMenuItem } from './SideMenuItem.tsx';
+import { DocsSVG } from './ui/DocsSVG.tsx';
+import { VisSVG } from './ui/VisSVG.tsx';
+import { FinSVG } from './ui/FinSVG.tsx';
+import { ManagSVG } from './ui/ManagSVG.tsx';
+import { MarkSVG } from './ui/MarkSVG.tsx';
+import { HelpSVG } from './ui/HelpSVG.tsx';
+import { HomeSVG } from './ui/HomeSVG.tsx';
+import { SetSVG } from './ui/SetSVG.tsx';
 
-/**
- * Левое Меню (25% ширины)
- */
 export const SideMenu: React.FC = () => {
-  const { theme, toggleTheme } = useTheme();
-  const isDark = theme === 'dark';
+    // Для меню
+    const menuItems = [
+        { label: "Документы", icon: <DocsSVG/>, path:"/docs" },
+        { label: "Визуализация", icon: <VisSVG/>, path:"/visual" },
+        { label: "Финансы", icon: <FinSVG/>, path:"/finance"  },
+        { label: "Управление", icon: <ManagSVG/>, path:"/management" },
+        { label: "Маркетинг", icon: <MarkSVG/>, path:"/marketing" },
+        { label: "Помощник", icon: <HelpSVG/>, path:"/chat" },
+        { label: "Главная", icon: <HomeSVG/>, path:"/home" },
+        { label: "Настройки", icon: <SetSVG/>, path:"/settings" },
+    ];
 
-  const navItems = [
-    { to: "/chat", icon: MessageSquare, label: "Чат" },
-    { to: "/data-viz", icon: BarChart3, label: "Визуализация Данных" },
-    { to: "/settings", icon: Settings, label: "Настройки" },
-  ];
+    return (
+        <div className={styles.sideMenuWrapper}>
+            <header className={styles.headerSection}>
+                <Logo />
+                <div className={styles.headerText}>
+                    <p className={styles.titleText}>Vavilonus</p> 
+                    <p className={styles.subtitleText}>Copilot</p>
+                </div>
+            </header>
 
-  const asideClasses = `${styles.aside} ${isDark ? styles.asideDark : ''} transition-colors`;
-  const logoClasses = `${styles.logo} ${isDark ? styles.logoDark : ''}`;
-  const themeButtonClasses = `${styles.themeButton} ${isDark ? styles.themeButtonDark : styles.themeButtonLight}`;
-
-  return (
-    <aside className={styles.wrap}>
-      <div>
-        {/* Logo/Title Section */}
-        <h1 className={logoClasses}>
-          Vite SPA Dashboard
-        </h1>
-
-        {/* Navigation Links */}
-        <nav className={styles.nav}>
-          {navItems.map(item => {
-            const navItemClasses = `${styles.navItem} ${isDark ? styles.navItemDark : ''}`;
-            return (
-              <Link 
-                key={item.to} 
-                to={item.to}
-                className={navItemClasses}
-              >
-                <item.icon/>
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
-
-      {/* Footer/Settings Section */}
-      <div>
-        {/* Theme Toggle Button */}
-        <button 
-          onClick={toggleTheme}
-        >
-          {theme === 'light' ? (
-            <Moon/>
-          ) : (
-            <Sun/>
-          )}
-          {theme === 'light' ? "Тёмная Тема" : "Светлая Тема"}
-        </button>
-      </div>
-    </aside>
-  );
+            <section className={styles.menuSection}>
+                {menuItems.map((item, index) => (
+                    <SideMenuItem 
+                        key={index}
+                        icon={item.icon}
+                        label={item.label}
+                        path={item.path}
+                    />
+                ))}
+            </section>
+        </div>
+    );
 };

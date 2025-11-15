@@ -3,16 +3,15 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useTheme } from './hooks/useTheme.ts';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { MainLayout } from './layouts/MainLayout';
-import { LoginPage } from './pages/LoginPage';
 import { ChatWorkspace } from './pages/workspaces/ChatWorkspace';
 /* import { DataVizWorkspace } from './pages/workspaces/DataVizWorkspace';
 import { SettingsPage } from './pages/workspaces/SettingsPage'; */
 import styles from './styles/App.module.css';
 import { HomeWorkspace } from './pages/workspaces/HomeWorkspace.tsx';
-
-// ====================================================================
-// Main Application Component
-// ====================================================================
+import { MarketingWorkspace } from './pages/workspaces/MarketingWorkspace.tsx';
+import { AuthPage } from './pages/AuthPage.tsx';
+import { SettingsWorkspace } from './pages/workspaces/SettingsWorkspace.tsx';
+import ChatWithActions from './pages/workspaces/ChatWithActionsWorkspace.tsx';
 
 const App: React.FC = () => {
   // Инициализируем управление темой (применяет класс к <html>)
@@ -23,7 +22,7 @@ const App: React.FC = () => {
       <BrowserRouter>
         <Routes>
           {/* Маршруты, не требующие авторизации */}
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/auth" element={<AuthPage />} />
           {/* Placeholder for OAuth Callback - handles redirect logic */}
           <Route path="/oauth-callback" element={<Navigate to="/home" replace />} /> 
 
@@ -38,6 +37,8 @@ const App: React.FC = () => {
             {/* Рабочие Пространства (Вложенные маршруты) */}
             <Route path="home" element={<HomeWorkspace />} />
             <Route path="chat" element={<ChatWorkspace />} />
+            <Route path="marketing" element={<ChatWithActions />} />
+            <Route path="settings" element={<SettingsWorkspace />} />
     {/*         <Route path="data-viz" element={<DataVizWorkspace />} />
             <Route path="settings" element={<SettingsPage />} /> */}
 

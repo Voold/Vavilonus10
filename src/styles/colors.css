@@ -5,18 +5,24 @@
   --main-bc: rgb(249, 250, 251);
   --sub-bc: rgb(255, 255, 255);
   --title-color: rgb(8, 8, 8);
+  --sub-title-color: rgb(75, 75, 75);
   --text-color: rgb(31, 31, 31);
 
   --color-black: rgb(0, 0, 0);
   --color-white: rgb(255, 255, 255);
+  --val-white: 255, 255, 255;
 
-  --color-gray:rgb(226, 228, 231);
+  --color-gray:rgb(190, 190, 190);
 
   --color-red: rgb(219, 38, 37);
+  --val-red: 219, 38, 37;
+
   --light-green: rgb(40, 190, 70);
 
   --dark-green: rgb(22, 101, 52);
   --dark-red: rgb(173, 1, 1);
+
+  --error-color: rgb(158, 0, 0);
 }
 
 body.dark-theme {
