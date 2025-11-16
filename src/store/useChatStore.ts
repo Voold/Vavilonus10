@@ -1,6 +1,12 @@
-import { create } from 'zustand';
-import { generateFinalPrompt, fetchScenarios } from '../utils/scenariesUtils';
+// useChatStore.ts
 
+import { create } from 'zustand';
+// Убедитесь, что эти импорты корректны для ваших утилит
+import { generateFinalPrompt, fetchScenarios } from '../utils/scenariesUtils'; 
+// >>> ИМПОРТ ОБНОВЛЕННОЙ УТИЛИТЫ API <<<
+import { getOllamaResponse } from '../api/ollamaApi'; // <-- ИЗМЕНЕНО: используем Ollama
+
+// --- ТИПЫ (НЕ ИЗМЕНЕНЫ) ---
 
 export type ChatMessage = {
     id: number;
@@ -14,12 +20,11 @@ export type ScenarioStep = {
     paramName: string;
 };
 
-// Тип сценария для хранения (с строковым шаблоном)
 export type Scenario = {
     id: string;
     name: string;
     steps: ScenarioStep[];
-    finalPromptTemplate: string; // Шаблон теперь строка!
+    finalPromptTemplate: string; // Шаблон теперь строка
 };
 
 export type TabKey = 'finance' | 'marketing' | 'management';
@@ -29,7 +34,7 @@ export type ChatState = {
     currentScenarioId: string | null;
     currentStepIndex: number;
     collectedParams: Record<string, string>;
-    scenarios: Scenario[] | null; // Сценарии могут быть null до загрузки
+    scenarios: Scenario[] | null; 
     isLoading: boolean;
     isScenariosLoaded: boolean;
 };
@@ -39,11 +44,11 @@ export type ChatStore = {
     marketing: ChatState;
     management: ChatState;
     
-    // Новые методы для управления загрузкой данных
+    // Методы
     loadScenarios: (tab: TabKey) => Promise<void>;
     loadState: (tab: TabKey) => ChatState;
     selectScenario: (tab: TabKey, scenarioId: string) => void;
-    handleUserMessage: (tab: TabKey, userMessage: string) => void;
+    handleUserMessage: (tab: TabKey, userMessage: string) => void; 
     resetChat: (tab: TabKey) => void;
 };
 
@@ -61,9 +66,9 @@ const getInitialState = (): ChatState => ({
     currentScenarioId: null,
     currentStepIndex: 0,
     collectedParams: {},
-    scenarios: null, // Изначально null
+    scenarios: null, 
     isLoading: false,
-    isScenariosLoaded: false, // Флаг загрузки
+    isScenariosLoaded: false, 
 });
 
 const INITIAL_STORE_STATE = {
@@ -77,7 +82,6 @@ const INITIAL_STORE_STATE = {
 export const useChatStore = create<ChatStore>((set, get) => ({
     ...INITIAL_STORE_STATE,
 
-    // Метод для загрузки сценариев
     loadScenarios: async (tab) => {
         const currentTabState = get()[tab];
         if (currentTabState.isScenariosLoaded) return;
@@ -90,6 +94,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             } 
         }));
 
+        // Предполагается, что fetchScenarios - асинхронная функция
         const scenariosData: Scenario[] = await fetchScenarios(tab);
 
         set((state) => ({
@@ -103,7 +108,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         }));
     },
 
-    // Метод для получения состояния (для компонента)
     loadState: (tab:TabKey) => {
         return get()[tab];
     },
@@ -114,8 +118,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             const selectedScenario = currentTabState.scenarios?.find(s => s.id === scenarioId);
             
             if (!selectedScenario || currentTabState.currentScenarioId !== null) return state;
-
-            // ... (Логика selectScenario остается прежней) ...
             
             const userSelectionMessage: ChatMessage = {
                 id: Date.now() + 1,
@@ -143,6 +145,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         });
     },
 
+    // >>> ИЗМЕНЕННЫЙ МЕТОД handleUserMessage <<<
     handleUserMessage: (tab, userMessage) => {
         const state = get();
         const currentTabState = state[tab];
@@ -157,6 +160,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
         if (!currentScenario) return;
 
+        // Временно включаем isLoading и добавляем сообщение пользователя
         set((s) => ({
             ...s,
             [tab]: {
@@ -196,51 +200,69 @@ export const useChatStore = create<ChatStore>((set, get) => ({
                     messages: [...currentTabState.messages, newUserMessage, nextModelMessage],
                     currentStepIndex: nextStepIndex,
                     collectedParams: updatedParams,
-                    isLoading: false,
+                    isLoading: false, // Выключаем загрузку, так как это просто следующий шаг
                 },
             }));
 
         } else {
             // ЭТАПЫ ЗАВЕРШЕНЫ (ФОРМИРУЕМ ПРОМПТ И ОТПРАВЛЯЕМ)
 
-            // !!! ИСПОЛЬЗУЕМ УТИЛИТУ ДЛЯ ГЕНЕРАЦИИ ПРОМПТА !!!
             const finalPrompt = generateFinalPrompt(currentScenario.finalPromptTemplate, updatedParams);
             
-            setTimeout(() => {
-                const finalModelResponse: ChatMessage = {
-                    id: Date.now() + 3,
-                    role: 'model',
-                    content: `[СИМУЛЯЦИЯ ОТВЕТА МОДЕЛИ]\n\n**Итоговый промпт:** \`${finalPrompt}\`\n\n**Собранные параметры:** ${JSON.stringify(updatedParams)}\n\n*Для реального ответа здесь был бы ответ с сервера.*`,
-                };
-
-                set((s) => ({
-                    ...s,
-                    [tab]: {
-                        ...currentTabState,
-                        messages: [...currentTabState.messages, finalModelResponse], // Добавляем только ответ модели, сообщение пользователя уже добавлено ниже
-                        currentScenarioId: null, 
-                        currentStepIndex: 0,
-                        collectedParams: {},
-                        isLoading: false, 
-                    },
-                }));
-            }, 1500); 
-
-            // Сначала добавляем сообщение пользователя и включаем загрузку
+            // 1. Добавляем сообщение пользователя в чат и подтверждаем, что загрузка началась
             set((s) => ({
                 ...s,
                 [tab]: {
                     ...currentTabState,
                     messages: [...currentTabState.messages, newUserMessage], 
                     collectedParams: updatedParams,
+                    isLoading: true, // Убеждаемся, что индикатор загрузки включен
                 },
             }));
+            
+            // 2. Асинхронный вызов Ollama API (ВМЕСТО DeepSeek)
+            getOllamaResponse(finalPrompt) // <-- ИЗМЕНЕНИЕ: getOllamaResponse
+                .then((modelResponse) => {
+                    const finalModelResponse: ChatMessage = {
+                        id: Date.now() + 3,
+                        role: 'model',
+                        content: modelResponse, 
+                    };
+                    
+                    set((s) => ({
+                        ...s,
+                        [tab]: {
+                            ...s[tab], // Берем актуальное состояние, чтобы не потерять другие обновления
+                            messages: [...s[tab].messages, finalModelResponse], 
+                            currentScenarioId: null, // Завершаем сценарий
+                            currentStepIndex: 0,
+                            collectedParams: {},
+                            isLoading: false, // Выключаем загрузку
+                        },
+                    }));
+                })
+                .catch((error) => {
+                    // Обработка ошибки
+                    const errorMessage: ChatMessage = {
+                        id: Date.now() + 3,
+                        role: 'model',
+                        content: `Произошла ошибка при получении ответа от Ollama: ${error.message || 'Неизвестная ошибка'}.`, // <-- ИЗМЕНЕНИЕ: Название ошибки
+                    };
+                    
+                    set((s) => ({
+                        ...s,
+                        [tab]: {
+                            ...s[tab],
+                            messages: [...s[tab].messages, errorMessage],
+                            isLoading: false,
+                        },
+                    }));
+                });
         }
     },
 
     resetChat: (tab) => {
         const state = get();
-        // При сбросе сохраняем загруженные сценарии
         const currentScenarios = state[tab].scenarios; 
         set((s) => ({
             ...s,

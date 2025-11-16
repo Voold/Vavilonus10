@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // ChatComponent.tsx (Обновленная версия)
 
 import React, { useState, useEffect, useRef } from 'react';
