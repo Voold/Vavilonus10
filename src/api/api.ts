@@ -11,9 +11,6 @@ export const API_BASE_URL = 'https://vavilonus10.ru/api';
  */
 export const publicApi: AxiosInstance = axios.create({
     baseURL: API_BASE_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
 });
 
 /**
