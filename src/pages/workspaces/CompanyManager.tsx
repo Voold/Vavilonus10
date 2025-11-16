@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useCompanyStore} from '../../store/companyStore';
-import type { Chat } from '../../store/companyStore';
+/* import type { Chat } from '../../store/companyStore'; */
+import type {  Chat, } from '../../utils/companyService'; 
 
 // Заглушка для компонента чата, который мы определим позже
 const SimpleChat: React.FC<{ companyId: string, chat: Chat }> = ({ chat }) => (
@@ -21,7 +22,7 @@ const CompanyManager: React.FC = () => {
         error,
         fetchCompanies,
         createCompany,
-        selectCompany,
+        /* selectCompany, */
         clearSelection,
         fetchUserChats,
         fetchCompanyDocuments,
@@ -61,7 +62,7 @@ const CompanyManager: React.FC = () => {
         if (selectedCompany) {
             useCompanyStore.getState().createChat(
                 selectedCompany.id,
-                CURRENT_USER_ID,
+               /*  CURRENT_USER_ID, */
                 'helper', // По умолчанию
                 `Новый чат ${companyChats.length + 1}`
             );
@@ -110,11 +111,11 @@ const CompanyManager: React.FC = () => {
             {/* --- Список компаний --- */}
             <h2>📋 Список Компаний</h2>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-              {console.log(companies)}
-                {/* {companies.map((company) => (
+
+                {companies?.map((company) => (
                     <button
                         key={company.id}
-                        onClick={() => selectCompany(company.id)}
+                        /* onClick={() => selectedCompany(company.id)} */
                         style={{
                             padding: '10px 15px',
                             cursor: 'pointer',
@@ -126,7 +127,7 @@ const CompanyManager: React.FC = () => {
                     >
                         {company.name} (ID: {company.id})
                     </button>
-                ))} */}
+                ))}
             </div>
 
             <hr />

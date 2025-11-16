@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { AxiosResponse } from 'axios';
 import { protectedApi } from '../api/api';
 
@@ -77,7 +78,7 @@ export const companyService = {
     // --- Документы ---
     
     async fetchCompanyDocuments(companyId: string): Promise<AxiosResponse<Document[]>> {
-        return protectedApi.get<Document[]>(`/companies/${company_id}/docs/`);
+        return protectedApi.get<Document[]>(`/companies/${companyId}/docs/`);
     },
 
     async uploadDocument(companyId: string, file: File): Promise<AxiosResponse<void>> {

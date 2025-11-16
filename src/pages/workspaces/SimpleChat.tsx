@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import type { Chat } from '../../store/companyStore'; // Импортируем тип Chat
+import  type { Chat } from '../../utils/companyService';
+import { useCompanyStore } from '../../store/companyStore';
 
 // Тип для сообщения
 interface Message {
@@ -75,6 +76,7 @@ const SimpleChat: React.FC<SimpleChatProps> = ({ companyId, chat }) => {
             
         } catch {
             console.error("Failed to connect to WebSocket, using fallback.");
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setIsConnected(false);
         }
 
