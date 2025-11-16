@@ -40,12 +40,17 @@ export const companyService = {
         return protectedApi.get<Company[]>('/companies');
     },
 
-    async createCompany(name: string, description: string): Promise<AxiosResponse<Company>> {
-        const formPayload = new FormData();
-        formPayload.append('name', name);
-        formPayload.append('description', description);
-        return protectedApi.post<Company>('/companies', formPayload);
-    },
+  async createCompany(name: string, description: string): Promise<AxiosResponse<Company>> {
+      const formPayload = new FormData();
+      formPayload.append('name', name);
+      formPayload.append('description', description);
+
+      return protectedApi.post<Company>('/companies', formPayload, {
+          headers: {
+              'Content-Type': undefined, 
+          },
+      });
+  },
 
     async getCompanyInfo(companyId: string): Promise<AxiosResponse<Company>> {
         return protectedApi.get<Company>(`/companies/${companyId}`);
