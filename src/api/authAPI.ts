@@ -1,12 +1,12 @@
 import axios from 'axios';
 import type { AxiosInstance, AxiosResponse } from 'axios';
 
-const API_URL = 'https://vavilonus10/api';
+const API_URL = 'https://vavilonus10.ru/api';
 
 const authAPI: AxiosInstance = axios.create({
     baseURL: API_URL,
     headers: {
-        'Content-Type': 'application/json',
+        
     },
 });
 
@@ -17,6 +17,17 @@ export interface UserBase {
     inn: number;
     role?: string;
     folder_path?: string;
+}
+
+export interface LoginResponse {
+    message: string;
+    token?: string; // Если токен возвращается
+    user_info: {
+        id: number;
+        full_name: string;
+        inn: number;
+        role: string;
+    }
 }
 
 // UserUpdate (для PUT /users/)
@@ -99,9 +110,9 @@ export const userApiService = {
      * @param loginData Данные для входа (inn, password)
      * @returns Токен или подтверждение успеха
      */
-    async loginUser(loginData: LoginData): Promise<AxiosResponse<{ token: string }>> {
-        // Ответ: 200 Success, возвращает токен или сессию
-        return authAPI.post<{ token: string }>('/auth/login/', loginData);
+    async loginUser(loginFormData: FormData): Promise<AxiosResponse<LoginResponse>> {
+        // Используем /auth/login/ или тот URL, который ожидает сервер
+        return authAPI.post<LoginResponse>('/login_handler', loginFormData); 
     },
 
     /**

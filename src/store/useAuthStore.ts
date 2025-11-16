@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from 'zustand';
 import { 
     userApiService, 
@@ -7,7 +8,7 @@ import type {
     UserUpdate, 
     UserDel, 
     UserCompanyAdd,
-    LoginData, 
+/*     LoginData,  */
 /*     UserProfileResponse */
 } from '../api/authAPI';
 
@@ -32,7 +33,7 @@ interface AuthState {
     deleteUser: (deleteData: UserDel) => Promise<void>;
     addUserToCompany: (data: UserCompanyAdd) => Promise<void>;
 
-    loginUser: (loginData: LoginData) => Promise<void>;
+    loginUser: (loginFormData: FormData) => Promise<void>; 
     fetchUserProfile: (inn: number) => Promise<void>;
     
     // ДОБАВЛЕННЫЙ МЕТОД
@@ -151,17 +152,33 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     },
 
     // Вход пользователя
-    loginUser: async (loginData: LoginData) => {
+    // ПРИНИМАЕТ FormData, как в компоненте
+    loginUser: async (loginFormData: FormData) => { 
         set({ isLoading: true, error: null });
         try {
             // Шаг 1: Аутентификация
-            await userApiService.loginUser(loginData);
-            // Здесь можно сохранить токен, если он есть: localStorage.setItem('token', loginResponse.data.token);
+            // userApiService.loginUser теперь принимает FormData
+            const loginResponse = await userApiService.loginUser(loginFormData); 
+            
+            // --- НОВЫЙ КОД: Извлекаем данные из ответа ---
+            const profile = loginResponse.data.user_info;
 
-            // Шаг 2: Получение профиля (используем ИНН для получения данных)
-            await get().fetchUserProfile(loginData.inn);
-
-            set({ isLoading: false, error: null });
+            // Шаг 2: Сохраняем данные профиля и устанавливаем статус входа
+            set({
+                user: { 
+                    inn: profile.inn,
+                    fullName: profile.full_name,
+                    role: profile.role,
+                    isLoggedIn: true, // Устанавливаем статус входа
+                },
+                isLoading: false,
+                error: null,
+            });
+            
+            // Токен: можно сохранить здесь, если он нужен для будущих запросов
+            // if (loginResponse.data.token) {
+            //     localStorage.setItem('token', loginResponse.data.token);
+            // }
 
         } catch (err: any) {
             const errorMessage = err.response?.data?.detail || 'Ошибка входа. Проверьте ИНН и пароль.';

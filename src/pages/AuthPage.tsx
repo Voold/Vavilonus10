@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogIn, UserPlus, AlertTriangle } from 'lucide-react';
-import styles from '../styles/AuthPage.module.css'; 
+import styles from '../styles/AuthPage.module.css';
 // Предполагаем, что useAuthStore и типы импортированы корректно
 import { useAuthStore } from '../store/useAuthStore';
 
 // Mock-типы для корректной компиляции, если не импортированы глобально
 // В реальном проекте эти типы должны быть импортированы из authAPI.ts
-type UserBase = { full_name: string; inn: number; role?: string };
+type UserBase = { full_name: string; inn: number; role?: string; folder_path: string };
 type LoginData = { inn: number; password: string };
 
 
@@ -18,18 +18,19 @@ type LoginData = { inn: number; password: string };
 export const AuthPage: React.FC = () => {
     const navigate = useNavigate();
     // Состояние для переключения между "Вход" и "Регистрация"
-    const [isRegisterMode, setIsRegisterMode] = useState(false); 
-    
+    const [isRegisterMode, setIsRegisterMode] = useState(false);
+
+    // НОВОЕ СОСТОЯНИЕ для чекбокса "Являюсь управляющим компании"
+    const [isDirector, setIsDirector] = useState(false);
+
     // Локальное состояние формы
-    const [formData, setFormData] = useState({ 
-        inn: '', 
-        fullName: '', 
+    const [formData, setFormData] = useState({
+        inn: '',
+        fullName: '',
         password: '',
-        role: ''
     });
 
     // --- ИСПРАВЛЕНИЕ: Безопасное извлечение состояния из Zustand ---
-    // Извлекаем каждый элемент отдельно, чтобы избежать создания нового объекта в селекторе.
     const isLoggedIn = useAuthStore((state) => state.user.isLoggedIn);
     const isLoading = useAuthStore((state) => state.isLoading);
     const error = useAuthStore((state) => state.error);
@@ -39,14 +40,13 @@ export const AuthPage: React.FC = () => {
     // -----------------------------------------------------------------
 
     // Эффект для перенаправления, если пользователь уже авторизован
-    // Теперь зависит только от примитива isLoggedIn, что безопасно.
     useEffect(() => {
         if (isLoggedIn) {
             navigate('/dashboard', { replace: true });
         }
     }, [isLoggedIn, navigate]);
-    
-    // Сброс ошибки при смене режима
+
+    // Сброс ошибки и состояния чекбокса при смене режима
     useEffect(() => {
         setError(null);
     }, [isRegisterMode, setError]);
@@ -55,12 +55,18 @@ export const AuthPage: React.FC = () => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
-        if (error) setError(null); 
+        if (error) setError(null);
+    };
+    
+    // НОВАЯ ФУНКЦИЯ для обработки чекбокса
+    const handleDirectorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setIsDirector(e.target.checked);
+        if (error) setError(null);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError(null); 
+        setError(null);
 
         // 1. Проверка обязательных полей
         if (!formData.inn || !formData.password) {
@@ -82,10 +88,15 @@ export const AuthPage: React.FC = () => {
                     return;
                 }
 
+                // --- НОВАЯ ЛОГИКА ОПРЕДЕЛЕНИЯ РОЛИ ---
+                // Если чекбокс выбран, роль = 'director', иначе - 'worker'
+                const roleValue = isDirector ? 'director' : 'worker';
+
                 const userData: UserBase = {
                     full_name: formData.fullName,
                     inn: innNum,
-                    role: formData.role || undefined, 
+                    role: roleValue,
+                    folder_path: String(innNum),
                 };
                 
                 await createUser(userData);
@@ -100,8 +111,12 @@ export const AuthPage: React.FC = () => {
                     inn: innNum,
                     password: formData.password,
                 };
+
+                const formPayload = new FormData();
+                formPayload.append('inn', loginData.inn.toString());
+                formPayload.append('password', loginData.password);
                 
-                await loginUser(loginData);
+                await loginUser(formPayload);
 
                 // Если успешно, перенаправляем (произойдет через useEffect)
             }
@@ -137,7 +152,7 @@ export const AuthPage: React.FC = () => {
                 onChange={handleChange}
                 required
                 className={styles.inputField}
-                pattern="\d*" 
+                pattern="\d*"
                 maxLength={12}
             />
 
@@ -151,17 +166,19 @@ export const AuthPage: React.FC = () => {
                 required
                 className={styles.inputField}
             />
-            
-            {/* Поле Роль (опционально для регистрации) */}
+
             {isRegisterMode && (
-                <input
-                    type="text"
-                    name="role"
-                    placeholder="*Роль (Например, 'Manager') [Опционально]"
-                    value={formData.role}
-                    onChange={handleChange}
-                    className={styles.inputField}
-                />
+                <div className={styles.checkboxWrapper}> {/* Добавьте стиль для div */}
+                    <label className={styles.checkboxLabel}>
+                        <input
+                            type="checkbox"
+                            checked={isDirector}
+                            onChange={handleDirectorChange}
+                            className={styles.checkboxInput} // Добавьте стиль для input
+                        />
+                        Являюсь управляющим компании
+                    </label>
+                </div>
             )}
 
             {/* Кнопка отправки */}
@@ -188,13 +205,13 @@ export const AuthPage: React.FC = () => {
                 {/* Заголовок и Иконка */}
                 <div className={styles.header}>
                     <div className={styles.titleBlock}>
-                      {isRegisterMode ? 
-                        <UserPlus size={48} className={styles.icon}/> : 
-                        <LogIn size={48} className={styles.icon}/>
-                      }
-                      <h2 className={styles.title}>
-                          {isRegisterMode ? 'Регистрация' : 'Вход'}
-                      </h2>
+                        {isRegisterMode ? 
+                            <UserPlus size={48} className={styles.icon}/> : 
+                            <LogIn size={48} className={styles.icon}/>
+                        }
+                        <h2 className={styles.title}>
+                            {isRegisterMode ? 'Регистрация' : 'Вход'}
+                        </h2>
                     </div>
                     <p className={styles.subtitle}>
                         {isRegisterMode 

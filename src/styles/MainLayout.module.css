@@ -6,6 +6,7 @@
 
 .wrap aside {
   width: 25%;
+  max-width: 400px;
 }
 
 .wrap main {

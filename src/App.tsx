@@ -12,6 +12,9 @@ import { HomeWorkspace } from './pages/workspaces/HomeWorkspace.tsx';
 import { AuthPage } from './pages/AuthPage.tsx';
 import { SettingsWorkspace } from './pages/workspaces/SettingsWorkspace.tsx';
 import ChatWithActions from './pages/workspaces/ChatWithActionsWorkspace.tsx';
+import ManagementWorkspace from './pages/workspaces/ManagementWorkspace.tsx';
+import SimpleChat from './pages/workspaces/SimpleChat.tsx';
+import CompanyManager from './pages/workspaces/CompanyManager.tsx';
 
 const App: React.FC = () => {
   // Инициализируем управление темой (применяет класс к <html>)
@@ -38,7 +41,10 @@ const App: React.FC = () => {
             <Route path="home" element={<HomeWorkspace />} />
             <Route path="chat" element={<ChatWorkspace />} />
             <Route path="marketing" element={<ChatWithActions />} />
-            <Route path="settings" element={<SettingsWorkspace />} />
+            {/* <Route path="settings" element={<SettingsWorkspace />} /> */}
+            <Route path="management" element={<ManagementWorkspace />} />
+            {/* <Route path="ch" element={<SimpleChat/>} /> */}
+            <Route path="cc" element={<CompanyManager/>} />
     {/*         <Route path="data-viz" element={<DataVizWorkspace />} />
             <Route path="settings" element={<SettingsPage />} /> */}
 

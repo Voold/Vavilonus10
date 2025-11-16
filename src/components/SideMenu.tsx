@@ -15,13 +15,13 @@ export const SideMenu: React.FC = () => {
     // Для меню
     const menuItems = [
         { label: "Документы", icon: <DocsSVG/>, path:"/docs" },
-        { label: "Визуализация", icon: <VisSVG/>, path:"/visual" },
+        /* { label: "Визуализация", icon: <VisSVG/>, path:"/visual" }, */
         { label: "Финансы", icon: <FinSVG/>, path:"/finance"  },
         { label: "Управление", icon: <ManagSVG/>, path:"/management" },
         { label: "Маркетинг", icon: <MarkSVG/>, path:"/marketing" },
         { label: "Помощник", icon: <HelpSVG/>, path:"/chat" },
         { label: "Главная", icon: <HomeSVG/>, path:"/home" },
-        { label: "Настройки", icon: <SetSVG/>, path:"/settings" },
+        /* { label: "Настройки", icon: <SetSVG/>, path:"/settings" }, */
     ];
 
     return (
@@ -29,7 +29,7 @@ export const SideMenu: React.FC = () => {
             <header className={styles.headerSection}>
                 <Logo />
                 <div className={styles.headerText}>
-                    <p className={styles.titleText}>Vavilonus</p> 
+                    <p className={styles.titleText}>Vavilonus10</p> 
                     <p className={styles.subtitleText}>Copilot</p>
                 </div>
             </header>

@@ -178,3 +178,65 @@
 .switchButton:hover {
     color: var(--title-color, #6366f1);
 }
+
+/* Контейнер, который заменяет inputField для чекбокса */
+.checkboxWrapper {
+    /* Используем те же горизонтальные отступы, что и у inputField, но без жесткой рамки */
+    padding: 0.75rem 0; 
+    width: 100%;
+    /* Добавляем немного отступа, если нужно выделить блок */
+}
+
+/* Лейбл, который является кликабельной областью */
+.checkboxLabel {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem; /* Отступ между чекбоксом и текстом */
+    cursor: pointer;
+    font-size: 0.9375rem; /* Чуть больше, чем subtitle */
+    color: var(--text-color, #f3f4f6);
+    user-select: none; /* Запретить выделение текста */
+}
+
+/* Стилизация самого чекбокса */
+.checkboxInput {
+    /* Сброс стандартных стилей, если это необходимо */
+    appearance: none;
+    -webkit-appearance: none;
+    
+    /* Размеры */
+    width: 20px;
+    height: 20px;
+    min-width: 20px; /* Фиксированный размер */
+
+    /* Визуальный стиль */
+    background-color: rgba(0, 0, 0, 0.3); /* Такой же фон, как у inputField */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* При наведении (Hover) */
+.checkboxInput:hover:not(:checked) {
+    border-color: var(--link-color, #818cf8);
+}
+
+/* При фокусе (Focus) */
+.checkboxInput:focus {
+    outline: 2px solid var(--title-color, #6366f1);
+    outline-offset: 2px;
+}
+
+/* Когда чекбокс выбран (Checked) */
+.checkboxInput:checked {
+    background-color: var(--title-color, #6366f1); /* Акцентный цвет */
+    border-color: var(--title-color, #6366f1);
+}
+
+
+.roleWorkerText {
+    color: var(--text-color);
+}

@@ -1,0 +1,171 @@
+.workspaceContainer {
+    padding: 30px;
+    background-color: var(--main-bc);
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    color: var(--text-color);
+}
+
+.title {
+    color: var(--title-color);
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--color-gray);
+    padding-bottom: 10px;
+}
+
+.section {
+    background-color: var(--sub-bc);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.sectionTitle {
+    color: var(--sub-title-color);
+    font-size: 1.5em;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+.inputGroup label {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--sub-title-color);
+    font-size: 0.9em;
+}
+
+.inputGroup input,
+.inputGroup textarea {
+    padding: 10px;
+    border: 1px solid var(--color-gray);
+    border-radius: 4px;
+    font-size: 1em;
+    color: var(--text-color);
+    background-color: var(--color-white);
+    transition: border-color 0.2s;
+}
+
+.inputGroup input:focus,
+.inputGroup textarea:focus {
+    border-color: var(--light-green);
+    outline: none;
+}
+
+.button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s, opacity 0.2s;
+    margin-right: 10px;
+}
+
+.primaryButton {
+    background-color: var(--dark-green);
+    color: var(--color-white);
+}
+
+.primaryButton:hover {
+    background-color: rgb(32, 130, 62);
+}
+
+.dangerButton {
+    background-color: var(--color-red);
+    color: var(--color-white);
+}
+
+.dangerButton:hover {
+    background-color: var(--dark-red);
+}
+
+.secondaryButton {
+    background-color: var(--color-gray);
+    color: var(--color-black);
+}
+
+.secondaryButton:hover {
+    background-color: rgb(150, 150, 150);
+}
+
+.button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.message {
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 15px;
+    font-weight: 600;
+    border: 1px solid;
+}
+
+.success {
+    background-color: rgba(40, 190, 70, 0.1);
+    color: var(--dark-green);
+    border-color: var(--dark-green);
+}
+
+.error {
+    background-color: rgba(219, 38, 37, 0.1);
+    color: var(--error-color);
+    border-color: var(--error-color);
+}
+
+.loading {
+    color: var(--sub-title-color);
+    font-style: italic;
+}
+
+.dataList {
+    list-style: none;
+    padding: 0;
+}
+
+.dataItem {
+    padding: 15px;
+    border: 1px solid var(--color-gray);
+    border-radius: 4px;
+    margin-bottom: 10px;
+    background-color: var(--main-bc);
+    transition: box-shadow 0.2s;
+}
+
+.dataItem:hover {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.dataItem p {
+    margin: 5px 0;
+    line-height: 1.4;
+}
+
+.dataItem strong {
+    color: var(--title-color);
+}
+
+.taskCompleted {
+    background-color: rgba(40, 190, 70, 0.2);
+    border-left: 5px solid var(--light-green);
+}
+
+.taskPending {
+    background-color: rgba(219, 38, 37, 0.2);
+    border-left: 5px solid var(--color-red);
+}
+
+/* Ограничитель ширины форм */
+.formGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
