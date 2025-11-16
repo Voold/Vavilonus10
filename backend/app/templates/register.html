@@ -93,7 +93,7 @@
 
     <div class="form-container">
         <h2>Регистрация</h2>
-        <form action="/register_handler" method="post">
+        <form action="/api/register_handler" method="post">
             <div class="form-group">
                 <label for="full_name">ФИО:</label>
                 <input type="text" id="full_name" name="full_name" required>
@@ -116,10 +116,10 @@
             </div>
 
             <button type="submit" class="btn">Зарегистрироваться</button>
-            <button type="button" class="btn-secondary" onclick="window.location.href='/login'">Вход</button>
+            <button type="button" class="btn-secondary" onclick="window.location.href='/api/login'">Вход</button>
 
             <div class="links">
-                Уже есть аккаунт? <a href="/login">Войдите</a>
+                Уже есть аккаунт? <a href="/api/login">Войдите</a>
             </div>
         </form>
     </div>
