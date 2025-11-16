@@ -41,7 +41,10 @@ export const companyService = {
     },
 
     async createCompany(name: string, description: string): Promise<AxiosResponse<Company>> {
-        return protectedApi.post<Company>('/companies', { name, description });
+        const formPayload = new FormData();
+        formPayload.append('name', name);
+        formPayload.append('description', description);
+        return protectedApi.post<Company>('/companies', formPayload);
     },
 
     async getCompanyInfo(companyId: string): Promise<AxiosResponse<Company>> {

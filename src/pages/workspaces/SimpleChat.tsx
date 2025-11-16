@@ -33,7 +33,7 @@ const SimpleChat: React.FC<SimpleChatProps> = ({ companyId, chat }) => {
     // Эффект для управления WebSocket-соединением
     useEffect(() => {
         // Заглушка: в реальном приложении нужно преобразовать HTTP в WS (ws:// или wss://)
-        const WS_URL = `ws://your-websocket-server/api/companies/${companyId}/ws/chats/${chat.id}?user_id=${chat.user_id}`;
+        const WS_URL = `wss://vavilonus10.ru/api/companies/${companyId}/ws/chats/${chat.id}?user_id=${chat.user_id}`;
         
         // Закрываем предыдущее соединение, если оно есть
         if (socketRef.current) {

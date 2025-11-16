@@ -45,7 +45,7 @@ export const useCompanyStore = create<CompanyState & CompanyActions>((set, get) 
     selectedCompany: null,
     companyChats: [],
     companyDocuments: [],
-    currentUserId: 'user-123', // TODO: Заменить на реальный ID после логина
+    currentUserId: '7', // TODO: Заменить на реальный ID после логина
     isLoading: false,
     error: null,
 
