@@ -12,12 +12,8 @@ RUN apt-get update && apt-get install -y \
 RUN curl -fsSL https://ollama.com/install.sh | sh
 
 # Копирование модели и скриптов
-COPY requirements.txt .
-COPY model_scripts/ ./model_scripts/
-COPY models/ ./models/
-
 # Установка Python зависимостей
-RUN pip install --no-cache-dir -r requirements.txt
+
 
 # Скачивание модели при сборке (опционально)
 # RUN ollama pull qwen2.5:0.5b-instruct

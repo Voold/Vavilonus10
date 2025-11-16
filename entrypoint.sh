@@ -11,11 +11,7 @@ ollama serve &
 sleep 10
 
 # Скачиваем модель если её нет
-if ! ollama list | grep -q "qwen2.5:7b-instruct-q4_K_M"; then
+if ! ollama list | grep -q "'qwen2.5:0.5b-instruct"; then
     echo "📦 Скачивание модели..."
-    ollama pull qwen2.5:7b-instruct-q4_K_M
+    ollama pull qwen2.5:0.5b-instruct
 fi
-
-# Запускаем прокси сервер для API
-echo "🌐 Запуск прокси сервера..."
-python model_scripts/proxy_server.py

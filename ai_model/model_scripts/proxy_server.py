@@ -1,11 +1,14 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import requests
 import json
 import time
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import logging
+import asyncio
+import aiohttp
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -33,10 +36,10 @@ class ChatMessage(BaseModel):
 
 class ChatRequest(BaseModel):
     messages: List[ChatMessage]
-    model: str = "qwen2.5:0.5b-instruct"
-    temperature: float = 0.7
+    model: str = "qwen2.5:7b-instruct-q4_K_M"
+    temperature: float = 0.1
     max_tokens: Optional[int] = 1000
-    stream: bool = False
+    stream: bool = True  # Изменено по умолчанию на True
 
 class ChatResponse(BaseModel):
     message: str
@@ -51,7 +54,7 @@ class HealthResponse(BaseModel):
 
 # Конфигурация
 OLLAMA_BASE_URL = "http://localhost:11434"
-MODEL_NAME = "qwen2.5:0.5b-instruct"
+MODEL_NAME = "qwen2.5:7b-instruct-q4_K_M"
 
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
@@ -77,9 +80,9 @@ async def health_check():
         models_available=[]
     )
 
-@app.post("/chat", response_model=ChatResponse)
+@app.post("/chat")
 async def chat_completion(request: ChatRequest):
-    """Основной endpoint для чата с моделью"""
+    """Основной endpoint для чата с моделью со streaming"""
     start_time = time.time()
     
     try:
@@ -94,10 +97,10 @@ async def chat_completion(request: ChatRequest):
             }
         }
         
-        logger.info(f"Отправка запроса к модели {request.model}")
+        logger.info(f"Отправка запроса к модели {request.model}, streaming: {request.stream}")
         
         if request.stream:
-            # Стриминг ответа
+            # Streaming response
             return await handle_streaming_response(ollama_payload, start_time)
         else:
             # Обычный ответ
@@ -135,33 +138,54 @@ async def chat_completion(request: ChatRequest):
 
 async def handle_streaming_response(payload: dict, start_time: float):
     """Обработка стримингового ответа"""
-    # Для стриминга возвращаем SSE или WebSocket
-    # Здесь упрощенная реализация
-    response = requests.post(
-        f"{OLLAMA_BASE_URL}/api/chat",
-        json=payload,
-        stream=True,
-        timeout=60
-    )
+    async def generate():
+        try:
+            # Используем aiohttp для асинхронного streaming
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    f"{OLLAMA_BASE_URL}/api/chat",
+                    json=payload,
+                    timeout=60
+                ) as response:
+                    
+                    if response.status != 200:
+                        error_text = await response.text()
+                        yield f"data: {json.dumps({'error': error_text})}\n\n"
+                        return
+                    
+                    full_response = ""
+                    async for line in response.content:
+                        if line:
+                            try:
+                                data = json.loads(line)
+                                if 'message' in data and 'content' in data['message']:
+                                    chunk = data['message']['content']
+                                    full_response += chunk
+                                    
+                                    # Отправляем chunk в формате SSE
+                                    yield f"data: {json.dumps({'message': {'content': chunk, 'role': 'assistant'}, 'model': data.get('model', 'unknown'), 'done': data.get('done', False)})}\n\n"
+                                
+                                # Если это последний chunk, отправляем полный ответ
+                                if data.get('done', False):
+                                    processing_time = time.time() - start_time
+                                    yield f"data: {json.dumps({'complete': True, 'processing_time': round(processing_time, 2), 'full_message': full_response})}\n\n"
+                                    
+                            except json.JSONDecodeError:
+                                continue
+                                
+        except Exception as e:
+            logger.error(f"Streaming error: {e}")
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
     
-    full_response = ""
-    for line in response.iter_lines():
-        if line:
-            data = json.loads(line)
-            if 'message' in data:
-                full_response += data['message']['content']
-    
-    processing_time = time.time() - start_time
-    
-    return ChatResponse(
-        message=full_response,
-        model=payload['model'],
-        usage={
-            "prompt_tokens": len(payload['messages']),
-            "completion_tokens": len(full_response.split()),
-            "total_tokens": len(payload['messages']) + len(full_response.split())
-        },
-        processing_time=round(processing_time, 2)
+    return StreamingResponse(
+        generate(),
+        media_type="text/plain",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "Cache-Control"
+        }
     )
 
 @app.post("/generate")
@@ -193,7 +217,7 @@ async def generate_text(prompt: str, max_tokens: int = 500):
         else:
             raise HTTPException(
                 status_code=response.status_code,
-                detail=response.text
+                detail=response.text + "ABOBA"
             )
             
     except Exception as e:

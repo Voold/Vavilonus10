@@ -5,7 +5,7 @@ from typing import List, Dict, Any
 logger = logging.getLogger(__name__)
 
 class ModelManager:
-    def __init__(self, base_url: str = "http://localhost:8001"):
+    def __init__(self, base_url: str = "http://ai-model:11434"):
         self.base_url = base_url
     
     def chat(self, messages: List[Dict], model: str = None) -> str:
@@ -18,7 +18,7 @@ class ModelManager:
             }
             
             response = requests.post(
-                f"{self.base_url}/chat",
+                f"{self.base_url}/api/chat",
                 json=payload,
                 timeout=60
             )
@@ -41,14 +41,3 @@ class ModelManager:
         except:
             return False
     
-    def get_available_models(self) -> List[str]:
-        """Получение списка доступных моделей"""
-        try:
-            response = requests.get(f"{self.base_url}/models", timeout=5)
-            if response.status_code == 200:
-                data = response.json()
-                return [model['name'] for model in data.get('models', [])]
-        except Exception as e:
-            logger.error(f"Ошибка получения списка моделей: {e}")
-        
-        return []
