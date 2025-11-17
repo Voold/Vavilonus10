@@ -41,8 +41,9 @@
 .menuSection {
     display: flex;
     flex-wrap: wrap;
-    width: 100%;
-    gap: 10px;
+    width: 88%;
+    margin: 0 auto;
+    gap: 6%;
 }
 
 .menuItem {
@@ -57,7 +58,7 @@
     color: var(--only-white, #ffffff);
     background-color: rgba(var(--val-red), 0.5);
 
-    width: 45%;
+    width: 47%;
     aspect-ratio: 1;
     margin: 0 auto;
 }

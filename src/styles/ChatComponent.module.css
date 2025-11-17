@@ -18,6 +18,59 @@
     margin-bottom: 20px;
 }
 
+.menuSection {
+    /* * Используем Flexbox для вертикального стекирования элементов. 
+     * Удаляем 'display: flex' из родительского компонента, чтобы элементы 
+     * занимали всю доступную ширину по умолчанию (блочное поведение).
+     */
+    display: block; 
+    margin: 15px 0;
+}
+
+/* -------------------- Отдельный элемент списка (кнопка) -------------------- */
+.menuItem {
+    /* Делаем кнопку блочным элементом, чтобы она занимала всю ширину */
+    display: block; 
+    
+    /* Основное оформление */
+    padding: 12px 18px;
+    margin-bottom: 8px; /* Небольшой отступ между элементами */
+    
+    /* Граница и скругление */
+    border: 1px solid var(--color-border-primary, #e0e0e0);
+    border-radius: 8px; 
+    
+    /* Текст */
+    color: var(--color-text-primary, #333);
+    font-size: 16px;
+    font-weight: 500; /* Полужирный для лучшей читаемости */
+    text-align: left; /* Выравнивание текста по левому краю */
+    
+    /* Курсор и переходы для интерактивности */
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s;
+    
+    /* Фон */
+    background-color: var(--color-bg-secondary, #f9f9f9);
+}
+
+/* -------------------- Эффекты при наведении и нажатии -------------------- */
+.menuItem:hover {
+    transform: scale(1.01);
+
+}
+
+.menuItem:active {
+    background-color: var(--color-bg-active, #e8e8e8);
+    transform: translateY(1px); /* Небольшое смещение для эффекта нажатия */
+}
+
+/* -------------------- Метка (текст сценария) -------------------- */
+.itemLabel {
+    /* Метка теперь не нуждается в 'display: flex', она просто является содержимым блока */
+    display: inline;
+}
+
 .message {
     max-width: 70%;
     padding: 10px 15px;

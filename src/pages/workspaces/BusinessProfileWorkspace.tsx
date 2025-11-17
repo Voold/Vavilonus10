@@ -29,7 +29,7 @@ export const BusinessProfileWorkspace: React.FC = () => {
     }
 
     return (
-        <WorkspaceCard title="Ваш Бизнес Профиль">
+        <WorkspaceCard title="Главная">
             <div className={styles.container}>
                 <h3 className={styles.title}>
                     <Edit2 size={20} className={styles.icon} /> 
@@ -54,14 +54,14 @@ export const BusinessProfileWorkspace: React.FC = () => {
                     disabled={!profile.trim()}
                 >
                     <Save size={18} />
-                    Сохранить Описание
+                    Сохранить
                 </button>
                 
-                {profile && (
+{/*                 {profile && (
                     <div className={styles.infoBox}>
                         Данные сохранены в локальном хранилище. Вы можете редактировать их в любое время.
                     </div>
-                )}
+                )} */}
             </div>
         </WorkspaceCard>
     );

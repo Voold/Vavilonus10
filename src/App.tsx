@@ -10,7 +10,7 @@ import styles from './styles/App.module.css';
 /* import { HomeWorkspace } from './pages/workspaces/HomeWorkspace.tsx'; */
 /* import { MarketingWorkspace } from './pages/workspaces/MarketingWorkspace.tsx'; */
 import { AuthPage } from './pages/AuthPage.tsx';
-/* import { SettingsWorkspace } from './pages/workspaces/SettingsWorkspace.tsx'; */
+import { SettingsWorkspace } from './pages/workspaces/SettingsWorkspace.tsx';
 import ChatWithActions from './pages/workspaces/ChatWithActionsWorkspace.tsx';
 import ManagementWorkspace from './pages/workspaces/ManagementWorkspace.tsx';
 import { BusinessProfileWorkspace } from './pages/workspaces/BusinessProfileWorkspace.tsx';
@@ -43,7 +43,7 @@ const App: React.FC = () => {
             <Route path="chat" element={<ChatWorkspace />} />
             <Route path="marketing" element={<ChatWithActions />} />
             <Route path="finance" element={<ChatWithActions />} />
-            {/* <Route path="settings" element={<SettingsWorkspace />} /> */}
+            <Route path="settings" element={<SettingsWorkspace />} />
             <Route path="management" element={<ManagementWorkspace />} />
             {/* <Route path="ch" element={<SimpleChat/>} /> */}
             {/* <Route path="cc" element={<CompanyManager/>} /> */}

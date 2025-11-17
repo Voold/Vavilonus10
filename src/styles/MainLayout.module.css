@@ -4,11 +4,112 @@
   display: flex;
 }
 
+/* Стандартные стили для десктопа (по умолчанию) */
 .wrap aside {
   width: 25%;
   max-width: 400px;
+  position: sticky;
+  top: 0; 
+  /* Добавим плавный переход для совместимости с мобильной адаптацией */
+  transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
+  flex-shrink: 0; /* Чтобы aside не сжимался */
 }
 
 .wrap main {
   width: 75%;
+  flex-grow: 1; /* Чтобы main занимал оставшееся место */
+  overflow-y: auto; /* Если контент main может скроллиться */
+}
+
+.menuHandle {
+  /* Не используется на десктопе, можно скрыть или стилизовать */
+  display: none; 
+}
+
+/* Оверлей: скрыт по умолчанию */
+.overlay {
+  display: none; 
+}
+
+@media (max-width: 800px) {
+  /* Переключаемся на вертикальный макет, если нужно */
+  .wrap {
+    display: block; /* Или оставить flex, если main не должен быть 100% */
+  }
+
+  .wrap aside {
+    /* Фиксированная позиция, чтобы меню было поверх всего */
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh; /* Полная высота экрана */
+    width: 60vw;
+    max-width: 300px;
+    z-index: 10;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+    background-color: white; /* Убедитесь, что меню имеет фон */
+    
+    /* Скрываем меню по умолчанию, сдвигая его влево */
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+  }
+
+  /* Класс, который добавляется при открытом меню */
+  .wrap aside.open {
+    transform: translateX(0); /* Сдвигаем в видимую область */
+  }
+
+  /* Кнопка/Область для открытия меню */
+  .menuHandle {
+    display: block; /* Показываем на мобильных */
+    position: absolute;
+    top: 0;
+    right: -30px; /* Выводим на 30px за пределы скрытой области меню */
+    width: 30px;
+    height: 100%;
+    cursor: pointer;
+    background: transparent; /* Сделать его невидимым */
+  }
+  
+  .toggleButton {
+    /* Стили для кнопки-иконки, которую видно в области 30px */
+    position: absolute;
+    top: 20px;
+    right: 5px; /* Позиционируем внутри 30px области */
+    background: #000;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 11; /* Чтобы была над оверлеем */
+    font-size: 25px;
+  }
+
+  /* Затемнение (Оверлей) */
+  .overlay {
+    display: block; /* Отображается, когда компонент Overlay в DOM */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5); /* Полупрозрачный черный */
+    z-index: 9; /* Должен быть ниже меню (z-index: 10) */
+    backdrop-filter: blur(2px); /* Дополнительный эффект размытия */
+  }
+  
+  .wrap main {
+    width: 100vw; /* Основной контент занимает весь экран */
+    /* Важно: предотвращаем горизонтальный скролл при открытом меню */
+    overflow-x: hidden; 
+  }
+}
+
+@media (max-width: 360px) {
+  /* Переопределяем ширину для маленьких экранов */
+  .wrap aside {
+    width: 200px; /* Фиксированная ширина */
+    max-width: 200px; /* Также фиксированная */
+  }
 }

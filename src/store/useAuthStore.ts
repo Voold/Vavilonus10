@@ -19,7 +19,6 @@ interface UserProfile {
     fullName: string | null;
     role: string | null;
     isLoggedIn: boolean;
-    // ... другие поля, которые вы хотите хранить
 }
 
 interface AuthState {

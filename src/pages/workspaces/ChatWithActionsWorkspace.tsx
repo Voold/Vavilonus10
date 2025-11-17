@@ -6,20 +6,27 @@ import ReactMarkdown from 'react-markdown'; // <--- НОВЫЙ ИМПОРТ
 import { useChatStore } from '../../store/useChatStore';
 import type { Scenario, TabKey, ChatMessage } from '../../store/useChatStore'; // Добавил ChatMessage
 import styles from '../../styles/ChatComponent.module.css';
+import { useLocation } from 'react-router-dom';
 
-// Имитация хука для получения текущей вкладки из URL
-const useTabKeyFromUrl = (): TabKey => 'finance'; 
+const useTabKeyFromUrl = (): TabKey => {
 
-// ----------------------------------------------------------------
-// НОВЫЙ КОМПОНЕНТ: Рендеринг содержимого сообщения с Markdown
-// ----------------------------------------------------------------
+    const location = useLocation();
+
+    const pathname = location.pathname; 
+
+    const pathSegments = pathname.split('/').filter(Boolean);
+    const tabKeyCandidate = pathSegments[0] || 'default'; 
+
+
+    return tabKeyCandidate as TabKey; 
+};
+
 const MessageContent: React.FC<{ msg: ChatMessage }> = ({ msg }) => {
     // Применяем Markdown только к сообщениям от модели
     if (msg.role === 'model' && !msg.isScenarioSelection) {
         return <ReactMarkdown>{msg.content}</ReactMarkdown>;
     }
-    
-    // Для сообщений пользователя, а также для первого сообщения модели с выбором сценария, используем обычный текст
+
     return <>{msg.content}</>;
 }
 
@@ -112,7 +119,7 @@ const ChatComponent: React.FC = () => {
                         key={msg.id}
                         className={`${styles.message} ${msg.role === 'user' ? styles.userMessage : styles.modelMessage}`}
                     >
-                        {/* КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: Используем MessageContent для рендеринга Markdown */}
+       
                         <MessageContent msg={msg} />
                         
                         {/* Показываем кнопки выбора сценария, только если это первое сообщение и сценарии загружены */}
