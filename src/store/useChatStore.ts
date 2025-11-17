@@ -27,7 +27,7 @@ export type Scenario = {
     finalPromptTemplate: string; // Шаблон теперь строка
 };
 
-export type TabKey = 'finance' | 'marketing' | 'management';
+export type TabKey = 'finance' | 'marketing' | 'management' | 'legal';
 
 export type ChatState = {
     messages: ChatMessage[];
@@ -43,6 +43,7 @@ export type ChatStore = {
     finance: ChatState;
     marketing: ChatState;
     management: ChatState;
+    legal: ChatState;
     
     // Методы
     loadScenarios: (tab: TabKey) => Promise<void>;
@@ -75,6 +76,7 @@ const INITIAL_STORE_STATE = {
     finance: getInitialState(),
     marketing: getInitialState(),
     management: getInitialState(),
+    legal: getInitialState(),
 };
 
 // --- Хранилище Zustand ---

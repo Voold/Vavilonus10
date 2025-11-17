@@ -1,254 +1,303 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { LogIn, UserPlus, AlertTriangle } from 'lucide-react';
-import styles from '../styles/AuthPage.module.css';
-// Предполагаем, что useAuthStore и типы импортированы корректно
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { LogIn, RefreshCw, Lock, User as UserIcon, Loader2, AlertTriangle, CheckCircle, LogOut } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
+import { vkLogin, vkExchange, refreshTokens, fetchProtected, initializeFirestore } from '../api/authAPI';
+//import { User } from './AuthAPI'; 
+// Импорт CSS модуля
+import styles from '../styles/AuthPage.module.css';
 
-// Mock-типы для корректной компиляции, если не импортированы глобально
-// В реальном проекте эти типы должны быть импортированы из authAPI.ts
-type UserBase = { full_name: string; inn: number; role?: string; folder_path: string };
-type LoginData = { inn: number; password: string };
+// --- ГЛОБАЛЬНЫЕ FIREBASE ПЕРЕМЕННЫЕ (для инициализации) ---
+declare const firebase: any;
+declare const __firebase_config: string | undefined;
+declare const __initial_auth_token: string | undefined;
 
+let auth: any; // Firebase Auth
 
-/**
- * Компонент страницы входа и регистрации.
- * Использует Zustand для управления состоянием и API-вызовами.
- */
-export const AuthPage: React.FC = () => {
-    const navigate = useNavigate();
-    // Состояние для переключения между "Вход" и "Регистрация"
-    const [isRegisterMode, setIsRegisterMode] = useState(false);
+const AuthPage: React.FC = () => {
+  const { 
+    user, accessToken, refreshToken, isLoading, isAuthReady, userId, 
+    setTokens, setUser, setLoading, setAuthReady, clearAuth 
+  } = useAuthStore();
+  
+  const [error, setError] = useState<string | null>(null);
+  const [protectedResult, setProtectedResult] = useState<{ ok: boolean, data: any } | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isProtectedLoading, setIsProtectedLoading] = useState(false);
 
-    // НОВОЕ СОСТОЯНИЕ для чекбокса "Являюсь управляющим компании"
-    const [isDirector, setIsDirector] = useState(false);
-
-    // Локальное состояние формы
-    const [formData, setFormData] = useState({
-        inn: '',
-        fullName: '',
-        password: '',
-    });
-
-    // --- ИСПРАВЛЕНИЕ: Безопасное извлечение состояния из Zustand ---
-    const isLoggedIn = useAuthStore((state) => state.user.isLoggedIn);
-    const isLoading = useAuthStore((state) => state.isLoading);
-    const error = useAuthStore((state) => state.error);
-    const createUser = useAuthStore((state) => state.createUser);
-    const loginUser = useAuthStore((state) => state.loginUser);
-    const setError = useAuthStore((state) => state.setError);
-    // -----------------------------------------------------------------
-
-    // Эффект для перенаправления, если пользователь уже авторизован
-    useEffect(() => {
-        if (isLoggedIn) {
-            navigate('/dashboard', { replace: true });
-        }
-    }, [isLoggedIn, navigate]);
-
-    // Сброс ошибки и состояния чекбокса при смене режима
-    useEffect(() => {
-        setError(null);
-    }, [isRegisterMode, setError]);
-
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-        if (error) setError(null);
-    };
+  // --- ИНИЦИАЛИЗАЦИЯ FIREBASE (только один раз) ---
+  useEffect(() => {
+    if (typeof firebase === 'undefined') {
+      setError("Firebase SDK is not available.");
+      return;
+    }
     
-    // НОВАЯ ФУНКЦИЯ для обработки чекбокса
-    const handleDirectorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setIsDirector(e.target.checked);
-        if (error) setError(null);
+    const initialize = async () => {
+      try {
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        if (!firebaseConfig) throw new Error("Firebase config not found.");
+
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.getFirestore(app);
+        auth = firebase.getAuth(app);
+        initializeFirestore(db); // Передаем Firestore DB в AuthAPI
+
+        // Аутентификация: вход
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        if (initialAuthToken) {
+           await firebase.signInWithCustomToken(auth, initialAuthToken);
+        } else {
+           await firebase.signInAnonymously(auth);
+        }
+        
+        // Устанавливаем слушатель состояния аутентификации
+        const unsubscribe = firebase.onAuthStateChanged(auth, (user: any) => {
+          const currentId = user ? user.uid : (auth.currentUser?.uid || crypto.randomUUID());
+          setAuthReady(true, currentId);
+        });
+        
+        return () => unsubscribe();
+      } catch (e: any) {
+        console.error("Firebase initialization failed:", e);
+        setError(`Ошибка инициализации: ${e.message}`);
+      }
     };
+    initialize();
+  }, [setAuthReady]);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError(null);
-
-        // 1. Проверка обязательных полей
-        if (!formData.inn || !formData.password) {
-            setError('ИНН и Пароль обязательны.');
-            return;
-        }
-
-        const innNum = parseInt(formData.inn, 10);
-        if (isNaN(innNum)) {
-            setError('ИНН должен быть числом.');
-            return;
-        }
-
-        try {
-            if (isRegisterMode) {
-                // Логика Регистрации (createUser)
-                if (!formData.fullName) {
-                    setError('ФИО обязательно для регистрации.');
-                    return;
-                }
-
-                // --- НОВАЯ ЛОГИКА ОПРЕДЕЛЕНИЯ РОЛИ ---
-                // Если чекбокс выбран, роль = 'director', иначе - 'worker'
-                const roleValue = isDirector ? 'director' : 'worker';
-
-                const userData: UserBase = {
-                    full_name: formData.fullName,
-                    inn: innNum,
-                    role: roleValue,
-                    folder_path: String(innNum),
-                };
-                
-                await createUser(userData);
-
-                // Оповещение и переключение на Вход
-                alert('Регистрация прошла успешно! Теперь войдите в систему.');
-                setIsRegisterMode(false);
-
-            } else {
-                // Логика Входа (loginUser)
-                const loginData: LoginData = {
-                    inn: innNum,
-                    password: formData.password,
-                };
-
-                const formPayload = new FormData();
-                formPayload.append('inn', loginData.inn.toString());
-                formPayload.append('password', loginData.password);
-                
-                await loginUser(formPayload);
-
-                // Если успешно, перенаправляем (произойдет через useEffect)
-            }
-        } catch (err) {
-            // Ошибка уже установлена в хранилище Zustand
-            console.error(err);
-        }
-    };
+  // --- ОБРАБОТКА CALLBACK VK ID (Шаг 2/3) ---
+  const handleCallbackExchange = useCallback(async (code: string, state: string) => {
+    if (!userId) return; 
     
-    // --- Компонент формы для режимов Входа/Регистрации ---
-    const AuthForm = (
-        <form onSubmit={handleSubmit} className={styles.authForm}>
-            
-            {/* Поле ФИО (только для регистрации) */}
-            {isRegisterMode && (
-                <input
-                    type="text"
-                    name="fullName"
-                    placeholder="ФИО (Полное имя)"
-                    value={formData.fullName}
-                    onChange={handleChange}
-                    required={isRegisterMode}
-                    className={styles.inputField}
-                />
-            )}
+    setLoading(true);
+    setError(null);
 
-            {/* Поле ИНН */}
-            <input
-                type="text"
-                name="inn"
-                placeholder="ИНН (Идентификатор)"
-                value={formData.inn}
-                onChange={handleChange}
-                required
-                className={styles.inputField}
-                pattern="\d*"
-                maxLength={12}
-            />
+    try {
+      const authData = await vkExchange(code, state, userId);
+      setTokens(authData.access_token, authData.refresh_token);
+      setUser(authData.user);
+      
+      // Очищаем URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } catch (e: any) {
+      console.error("VK Exchange failed:", e);
+      setError(`Ошибка обмена кода: ${e.message}`);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } finally {
+      setLoading(false);
+    }
+  }, [userId, setTokens, setUser, setLoading]);
 
-            {/* Поле Пароль */}
-            <input
-                type="password"
-                name="password"
-                placeholder="Пароль"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                className={styles.inputField}
-            />
+  // Проверка URL на наличие code и state при готовности Auth
+  useEffect(() => {
+    if (isAuthReady && userId) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      const state = urlParams.get('state');
 
-            {isRegisterMode && (
-                <div className={styles.checkboxWrapper}> {/* Добавьте стиль для div */}
-                    <label className={styles.checkboxLabel}>
-                        <input
-                            type="checkbox"
-                            checked={isDirector}
-                            onChange={handleDirectorChange}
-                            className={styles.checkboxInput} // Добавьте стиль для input
-                        />
-                        Являюсь управляющим компании
-                    </label>
-                </div>
-            )}
+      if (code && state) {
+        handleCallbackExchange(code, state);
+      }
+    }
+  }, [isAuthReady, userId, handleCallbackExchange]);
 
-            {/* Кнопка отправки */}
-            <button
-                type="submit"
-                disabled={isLoading}
-                className={styles.submitButton}
-            >
-                {isLoading ? (
-                    'Загрузка...'
-                ) : isRegisterMode ? (
-                    <><UserPlus size={18} /><span>Зарегистрироваться</span></>
-                ) : (
-                    <><LogIn size={18} /><span>Войти в систему</span></>
-                )}
-            </button>
-        </form>
-    );
 
+  // --- ОБРАБОТЧИКИ КНОПОК ---
+  const handleLogin = async () => {
+    if (isLoading || !isAuthReady || !userId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const authUrl = await vkLogin(userId);
+      window.location.href = authUrl; 
+    } catch (e: any) {
+      setError(`Ошибка инициации логина: ${e.message}`);
+      setLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    if (!refreshToken || isRefreshing) return;
+    setIsRefreshing(true);
+    setError(null);
+
+    try {
+      const data = await refreshTokens(refreshToken);
+      setTokens(data.access_token, data.refresh_token);
+      setError(null);
+    } catch (e: any) {
+      setError(`Ошибка обновления: ${e.message}. Токен отозван?`);
+      clearAuth();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+  
+  const handleProtected = async () => {
+    if (!accessToken || isProtectedLoading) return;
+    setIsProtectedLoading(true);
+    setError(null);
+    setProtectedResult(null);
+    
+    try {
+      const result = await fetchProtected(accessToken);
+      setProtectedResult(result);
+      if (!result.ok) {
+        setError(`Protected Access Error: ${result.data.detail || 'Неизвестная ошибка'}`);
+      }
+    } catch (e: any) {
+      setError(`Ошибка запроса Protected: ${e.message}`);
+    } finally {
+      setIsProtectedLoading(false);
+    }
+  };
+  
+  const handleLogout = () => {
+    clearAuth();
+    setUser(null);
+    setProtectedResult(null);
+    setError(null);
+  };
+
+  const isLoadingOrNotReady = isLoading || !isAuthReady;
+  const isLoggedIn = !!accessToken;
+  const iconSize = 18;
+  
+  const ProtectedResultDisplay = useMemo(() => {
+    if (!protectedResult) return null;
+    const { ok, data } = protectedResult;
+    const resultClass = ok 
+      ? styles.resultBoxSuccess 
+      : styles.resultBoxFailure;
+    const title = ok ? "Доступ разрешен" : "Доступ запрещен";
+    const Icon = ok ? CheckCircle : AlertTriangle;
+    
     return (
-        <div className={styles.pageContainer}>
-            <div className={styles.authCard}>
-                
-                {/* Заголовок и Иконка */}
-                <div className={styles.header}>
-                    <div className={styles.titleBlock}>
-                        {isRegisterMode ? 
-                            <UserPlus size={48} className={styles.icon}/> : 
-                            <LogIn size={48} className={styles.icon}/>
-                        }
-                        <h2 className={styles.title}>
-                            {isRegisterMode ? 'Регистрация' : 'Вход'}
-                        </h2>
-                    </div>
-                    <p className={styles.subtitle}>
-                        {isRegisterMode 
-                            ? 'Создайте новую учетную запись.' 
-                            : 'Пожалуйста, авторизуйтесь для доступа к рабочему пространству.'
-                        }
-                    </p>
+      <div className={`${styles.resultBox} ${resultClass}`}>
+        <div className={styles.resultTitle}>
+          <Icon size={iconSize} />
+          <span>{title}</span>
+        </div>
+        <pre className={styles.resultPre}>
+          {JSON.stringify(data, null, 2)}
+        </pre>
+      </div>
+    );
+  }, [protectedResult]);
+
+
+  return (
+    <div className={styles.card}>
+        <h1 className={styles.title}>
+            Войти через VK
+        </h1>
+        <p className={styles.subtitle}>
+            {isAuthReady 
+              ? `Инициализация завершена. User ID: ${userId}`
+              : "Инициализация Firebase..."
+            }
+        </p>
+
+        {error && (
+          <div className={styles.errorBox}>
+            <AlertTriangle className={styles.errorBoxIcon} size={iconSize} /> {error}
+          </div>
+        )}
+
+        {!isLoggedIn ? (
+          <button
+            onClick={handleLogin}
+            disabled={isLoadingOrNotReady}
+            className={styles.loginButton}
+          >
+            {isLoadingOrNotReady ? (
+              <Loader2 className={`${styles.buttonIcon} ${styles.animateSpin} `} size={iconSize} />
+            ) : (
+              <LogIn className={styles.buttonIcon} size={iconSize} />
+            )}
+            {isLoading ? 'Обработка VK ID Callback...' : 'Войти через VK ID'}
+          </button>
+        ) : (
+          <div className={styles.loggedInContainer}>
+
+            <div className={styles.userInfoBox}>
+              <h2 className={styles.userInfoTitle}>
+                <UserIcon className={styles.buttonIcon} size={iconSize} />
+                Авторизован
+              </h2>
+              <p className={styles.userInfoText}>
+                <span>Имя:</span> {user?.full_name || 'N/A'}
+              </p>
+              <p className={styles.userInfoText}>
+                <span>Email:</span> {user?.email || 'N/A'}
+              </p>
+              <p className={styles.userInfoText}>
+                <span>VK ID:</span> {user?.vk_id || 'N/A'}
+              </p>
+            </div>
+
+            <div className={styles.jwtControlBox}>
+                <h2 className={styles.jwtTitle}>Управление JWT</h2>
+
+                <div className={styles.tokenSection}>
+                    <label className={styles.tokenLabel}>Refresh Token (Срок: 30 дней)</label>
+                    <textarea 
+                      rows={2}
+                      readOnly 
+                      value={refreshToken || 'Нет Refresh Token'} 
+                      className={styles.tokenArea}
+                    />
+                    <button
+                      onClick={handleRefresh}
+                      disabled={!refreshToken || isRefreshing}
+                      className={styles.refreshButton}
+                    >
+                      {isRefreshing ? (
+                        <Loader2 className={`${styles.buttonIcon} animate-spin`} size={iconSize} />
+                      ) : (
+                        <RefreshCw className={styles.buttonIcon} size={iconSize} />
+                      )}
+                      Обновить токены
+                    </button>
                 </div>
 
-                {/* Блок ошибок */}
-                {error && (
-                    <div className={styles.errorBox}>
-                        <AlertTriangle size={20} style={{ minWidth: '20px' }}/>
-                        <p>{error}</p>
-                    </div>
-                )}
+                <div className={styles.separator}></div>
 
-                {/* Форма */}
-                {AuthForm}
-                
-                
-
-                {/* Переключатель режимов */}
-                <p className={styles.switchText}>
-                    {isRegisterMode ? 'Уже есть аккаунт?' : 'Нет аккаунта?'}
-                    <button 
-                        type="button"
-                        onClick={() => {
-                            setIsRegisterMode(prev => !prev);
-                        }}
-                        className={styles.switchButton}
+                <div className={styles.tokenSection}>
+                    <label className={styles.tokenLabel}>Access Token (Срок: 30 мин)</label>
+                    <textarea 
+                      rows={2}
+                      readOnly 
+                      value={accessToken || 'Нет Access Token'} 
+                      className={styles.tokenArea}
+                    />
+                    <button
+                      onClick={handleProtected}
+                      disabled={!accessToken || isProtectedLoading}
+                      className={styles.protectedButton}
                     >
-                        {isRegisterMode ? 'Войти' : 'Зарегистрироваться'}
+                      {isProtectedLoading ? (
+                        <Loader2 className={`${styles.buttonIcon} animate-spin`} size={iconSize} />
+                      ) : (
+                        <Lock className={styles.buttonIcon} size={iconSize} />
+                      )}
+                      Проверить /api/protected
                     </button>
-                </p>
-
+                </div>
             </div>
-        </div>
-    );
+
+            {ProtectedResultDisplay}
+
+            <button
+                onClick={handleLogout}
+                className={styles.logoutButton}
+            >
+                <LogOut className={styles.buttonIcon} size={iconSize} /> Выйти
+            </button>
+          </div>
+        )}
+      </div>
+  );
 };
+
+export default AuthPage;

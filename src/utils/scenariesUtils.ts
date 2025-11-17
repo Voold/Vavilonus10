@@ -1,3 +1,4 @@
+/* eslint-disable no-case-declarations */
 import type { TabKey } from "../store/useChatStore"
 
 /**
@@ -31,6 +32,10 @@ export const fetchScenarios = async (tab: TabKey) => {
             // Имитация импорта managementScenarios.json
             const managementData = await import('../scenaries/managementScenarios.json');
             return managementData.default || managementData;
+        case 'legal':
+            // Имитация импорта legalScenarios.json
+            const legalData = await import('../scenaries/legalScenarios.json');
+            return legalData.default || legalData;
         default:
             return [];
     }

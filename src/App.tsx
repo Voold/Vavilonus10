@@ -9,7 +9,7 @@ import { SettingsPage } from './pages/workspaces/SettingsPage'; */
 import styles from './styles/App.module.css';
 /* import { HomeWorkspace } from './pages/workspaces/HomeWorkspace.tsx'; */
 /* import { MarketingWorkspace } from './pages/workspaces/MarketingWorkspace.tsx'; */
-import { AuthPage } from './pages/AuthPage.tsx';
+import AuthPage  from './pages/AuthPage.tsx';
 import { SettingsWorkspace } from './pages/workspaces/SettingsWorkspace.tsx';
 import ChatWithActions from './pages/workspaces/ChatWithActionsWorkspace.tsx';
 import ManagementWorkspace from './pages/workspaces/ManagementWorkspace.tsx';
@@ -26,7 +26,7 @@ const App: React.FC = () => {
       <BrowserRouter>
         <Routes>
           {/* Маршруты, не требующие авторизации */}
-          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/vk_oauth" element={<AuthPage />} />
           {/* Placeholder for OAuth Callback - handles redirect logic */}
           <Route path="/oauth-callback" element={<Navigate to="/home" replace />} /> 
 
@@ -43,8 +43,10 @@ const App: React.FC = () => {
             <Route path="chat" element={<ChatWorkspace />} />
             <Route path="marketing" element={<ChatWithActions />} />
             <Route path="finance" element={<ChatWithActions />} />
+            <Route path="legal" element={<ChatWithActions />} />
             <Route path="settings" element={<SettingsWorkspace />} />
-            <Route path="management" element={<ManagementWorkspace />} />
+            <Route path="management" element={<ChatWithActions />} />
+            {/* <Route path="management" element={<ManagementWorkspace />} /> */}
             {/* <Route path="ch" element={<SimpleChat/>} /> */}
             {/* <Route path="cc" element={<CompanyManager/>} /> */}
     {/*         <Route path="data-viz" element={<DataVizWorkspace />} />

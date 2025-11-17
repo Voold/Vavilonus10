@@ -5,10 +5,11 @@ import { SideMenuItem } from './SideMenuItem.tsx';
 /* import { DocsSVG } from './ui/DocsSVG.tsx'; */
 /* import { VisSVG } from './ui/VisSVG.tsx'; */
 import { FinSVG } from './ui/FinSVG.tsx';
-/* import { ManagSVG } from './ui/ManagSVG.tsx'; */
+import { ManagSVG } from './ui/ManagSVG.tsx';
 import { MarkSVG } from './ui/MarkSVG.tsx';
 import { HelpSVG } from './ui/HelpSVG.tsx';
 import { HomeSVG } from './ui/HomeSVG.tsx';
+import { BookSVG } from './ui/BookSVG.tsx';
 /* import { SetSVG } from './ui/SetSVG.tsx'; */
 
 export const SideMenu: React.FC = () => {
@@ -20,9 +21,11 @@ export const SideMenu: React.FC = () => {
        /*  { label: "Управление", icon: <ManagSVG/>, path:"/management" },
         { label: "Компании", icon: <ManagSVG/>, path:"/cc" }, */
         { label: "Маркетинг", icon: <MarkSVG/>, path:"/marketing" },
+        { label: "Управление", icon: <ManagSVG/>, path:"/management" },
+        { label: "Юр. вопросы", icon: <BookSVG/>, path:"/legal" },
         { label: "Помощник", icon: <HelpSVG/>, path:"/chat" },
         { label: "Главная", icon: <HomeSVG/>, path:"/home" },
-        /* { label: "Настройки", icon: <SetSVG/>, path:"/settings" }, */
+        
     ];
 
     return (

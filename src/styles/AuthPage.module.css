@@ -1,242 +1,276 @@
-
-.pageContainer {
-    min-height: 100vh;
+.container {
+    width: 100vw;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--main-bc, #1f2937); 
+    background-color: var(--main-bc);
     padding: 1rem;
 }
 
-.authCard {
-    width: 100%;
-    max-width: 448px;
+.card {
+    max-width: 480px;
+    background-color: var(--sub-bc);
+    border-radius: 0.75rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     padding: 2rem;
-    background-color: var(--sub-bc, #374151);
-    border-radius: 12px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.08);
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-}
+    margin: auto;
+    margin-top: 20vh;
 
-.header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--text-color, #f3f4f6);
-}
-
-.titleBlock {
-  display: flex;
-  gap: 10px;
-  height: min-content;
-}
-
-.icon {
-    color: var(--title-color, #6366f1);
-    width: 48px;
-    height: 48px;
 }
 
 .title {
     font-size: 1.875rem;
-    font-weight: 800;
-    text-align: center;
-}
-
-.subtitle {
-    color: rgba(255, 255, 255, 0.6);
-    text-align: center;
-    font-size: 0.875rem;
-}
-
-.errorBox {
-    padding: 0.75rem;
-    background-color: var(--error-color, #ef4444);
-    color: var(--text-color, #f3f4f6);
-    border-radius: 6px;
-    display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-}
-
-.authForm {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.inputField {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 8px;
-    background-color: rgba(0, 0, 0, 0.3);
-    color: var(--text-color);
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.inputField::placeholder {
-    color: rgba(255, 255, 255, 0.4);
-}
-
-.inputField:focus {
-    border-color: var(--title-color);
-    box-shadow: 0 0 0 2px var(--title-color);
-}
-
-.submitButton {
-    width: 100%;
-    padding: 0.75rem;
-    border-radius: 8px;
-    background-color: var(--only-white);
-    color: var(--only-black);
     font-weight: 700;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    transition: opacity 0.2s;
+    color: var(--title-color);
+    text-align: center;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    opacity: 0.8;
 }
 
-.submitButton:hover:not(:disabled) {
-    opacity: 1;
+.titleIcon {
+    margin-right: 0.5rem;
+    color: var(--color-red);
 }
 
-.submitButton:disabled {
-    background-color: rgba(107, 114, 128, 0.6);
-    cursor: not-allowed;
-}
-
-.separator {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-top: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-
-.separatorLine {
-    flex-grow: 1;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.separatorText {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 0.875rem;
-}
-
-.oauthContainer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-}
-
-.oauthLink {
-    width: 100%;
+.subtitle {
     text-align: center;
+    font-size: 0.875rem;
+    color: var(--sub-title-color);
+}
+
+
+.errorBox {
     padding: 0.75rem;
-    border-radius: 8px;
-    background-color: var(#6366f1);
-    color: white;
-    font-weight: 600;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.2s;
-    text-decoration: none;
-}
-
-.oauthLink:hover {
-    background-color: var(#4f46e5);
-}
-
-.switchText {
-    text-align: center;
+    background-color: rgba(var(--val-red), 0.1);
+    border: 1px solid var(--color-red);
+    color: var(--error-color);
+    border-radius: 0.5rem;
     font-size: 0.875rem;
-    color: rgba(255, 255, 255, 0.6);
-    padding-top: 0.5rem;
-}
-
-.switchButton {
-    margin-left: 0.25rem;
-    color: var(--link-color, #818cf8);
     font-weight: 500;
-    background: none;
-    border: none;
-    cursor: pointer;
-    transition: color 0.2s;
-    padding: 0;
-}
-
-.switchButton:hover {
-    color: var(--title-color, #6366f1);
-}
-
-/* Контейнер, который заменяет inputField для чекбокса */
-.checkboxWrapper {
-    /* Используем те же горизонтальные отступы, что и у inputField, но без жесткой рамки */
-    padding: 0.75rem 0; 
-    width: 100%;
-    /* Добавляем немного отступа, если нужно выделить блок */
-}
-
-/* Лейбл, который является кликабельной областью */
-.checkboxLabel {
     display: flex;
     align-items: center;
-    gap: 0.75rem; /* Отступ между чекбоксом и текстом */
-    cursor: pointer;
-    font-size: 0.9375rem; /* Чуть больше, чем subtitle */
-    color: var(--text-color, #f3f4f6);
-    user-select: none; /* Запретить выделение текста */
 }
 
-/* Стилизация самого чекбокса */
-.checkboxInput {
-    /* Сброс стандартных стилей, если это необходимо */
-    appearance: none;
-    -webkit-appearance: none;
-    
-    /* Размеры */
-    width: 20px;
-    height: 20px;
-    min-width: 20px; /* Фиксированный размер */
+.errorBoxIcon {
+    margin-right: 0.5rem;
+}
 
-    /* Визуальный стиль */
-    background-color: rgba(0, 0, 0, 0.3); /* Такой же фон, как у inputField */
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
+.loginButton {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    color: var(--color-white);
+    background-color: var(--color-red);
     transition: all 0.2s ease-in-out;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
 }
 
-/* При наведении (Hover) */
-.checkboxInput:hover:not(:checked) {
-    border-color: var(--link-color, #818cf8);
+.loginButton:hover:not(:disabled) {
+    background-color: var(--dark-red);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
 }
 
-/* При фокусе (Focus) */
-.checkboxInput:focus {
-    outline: 2px solid var(--title-color, #6366f1);
-    outline-offset: 2px;
+.loginButton:disabled {
+    background-color: var(--color-gray);
+    cursor: not-allowed;
 }
 
-/* Когда чекбокс выбран (Checked) */
-.checkboxInput:checked {
-    background-color: var(--title-color, #6366f1); /* Акцентный цвет */
-    border-color: var(--title-color, #6366f1);
+.buttonIcon {
+    margin-right: 0.5rem;
 }
 
+.loggedInContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem; 
+}
 
-.roleWorkerText {
+.userInfoBox {
+    padding: 1rem;
+    background-color: var(--main-bc);
+    border: 1px solid var(--color-gray);
+    border-radius: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem; 
+}
+
+.userInfoTitle {
+    display: flex;
+    align-items: center;
+    font-size: 1.125rem; 
+    font-weight: 700;
     color: var(--text-color);
+}
+
+.userInfoText {
+    font-size: 0.875rem; 
+    color: var(--sub-title-color);
+}
+
+.userInfoText span {
+    font-weight: 600; 
+    color: var(--title-color);
+}
+
+
+.jwtControlBox {
+    padding: 1rem;
+    background-color: var(--main-bc);
+    border-radius: 0.75rem;
+    border: 1px solid var(--color-gray);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem; 
+}
+
+.jwtTitle {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.tokenSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.tokenLabel {
+    display: block;
+    font-size: 0.75rem; 
+    font-weight: 600;
+    color: var(--sub-title-color);
+}
+
+.tokenArea {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 0.75rem; 
+    font-family: monospace;
+    background-color: var(--only-white);
+    border: 1px solid var(--color-gray);
+    border-radius: 0.5rem;
+    resize: none;
+    word-break: break-all;
+}
+
+.refreshButton {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fcd34d; 
+    color: var(--only-black);
+}
+
+.refreshButton:hover:not(:disabled) {
+    background-color: #fbbf24;
+}
+
+.protectedButton {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--dark-green);
+    color: var(--color-white);
+}
+
+.protectedButton:hover:not(:disabled) {
+    background-color: var(--light-green);
+}
+
+.refreshButton:disabled, .protectedButton:disabled {
+    background-color: var(--color-gray);
+    color: var(--sub-title-color);
+    cursor: not-allowed;
+}
+
+.separator {
+    border-top: 1px solid var(--color-gray);
+}
+
+.resultBox {
+    padding: 1rem;
+    margin-top: 1rem;
+    border-left: 4px solid;
+    border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.resultBoxSuccess {
+    background-color: rgba(var(--light-green), 0.1);
+    border-color: var(--light-green);
+    color: var(--dark-green);
+}
+
+.resultBoxFailure {
+    background-color: rgba(var(--val-red), 0.1);
+    border-color: var(--color-red);
+    color: var(--dark-red);
+}
+
+.resultTitle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.resultPre {
+    white-space: pre-wrap;
+    font-size: 0.75rem;
+    background-color: var(--only-white);
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    border: 1px solid var(--color-gray);
+}
+
+.logoutButton {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-red);
+    background-color: rgba(var(--val-red), 0.1);
+    border-radius: 0.75rem;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logoutButton:hover {
+    background-color: rgba(var(--val-red), 0.2);
+}
+
+.animateSpin{
+    animation: spin infinite 1s linear;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
