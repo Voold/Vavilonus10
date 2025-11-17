@@ -9,11 +9,13 @@ import { SettingsPage } from './pages/workspaces/SettingsPage'; */
 import styles from './styles/App.module.css';
 /* import { HomeWorkspace } from './pages/workspaces/HomeWorkspace.tsx'; */
 /* import { MarketingWorkspace } from './pages/workspaces/MarketingWorkspace.tsx'; */
-import AuthPage  from './pages/AuthPage.tsx';
+/* import AuthPage  from './pages/AuthPage.tsx'; */
 /* import { SettingsWorkspace } from './pages/workspaces/SettingsWorkspace.tsx'; */
 import ChatWithActions from './pages/workspaces/ChatWithActionsWorkspace.tsx';
 /* import ManagementWorkspace from './pages/workspaces/ManagementWorkspace.tsx'; */
 import { BusinessProfileWorkspace } from './pages/workspaces/BusinessProfileWorkspace.tsx';
+import VKAuthStarter from './components/VKAuthStarter.tsx';
+import VKCallbackHandler from './components/VKCallbackHandler.tsx';
 /* import SimpleChat from './pages/workspaces/SimpleChat.tsx'; */
 /* import CompanyManager from './pages/workspaces/CompanyManager.tsx'; */
 
@@ -26,9 +28,9 @@ const App: React.FC = () => {
       <BrowserRouter>
         <Routes>
           {/* Маршруты, не требующие авторизации */}
-          <Route path="/vk_oauth" element={<AuthPage />} />
+          <Route path="/vk_oauth" element={<VKAuthStarter />} />
           {/* Placeholder for OAuth Callback - handles redirect logic */}
-          <Route path="/oauth-callback" element={<Navigate to="/home" replace />} /> 
+          <Route path="/oauth-callback" element={<VKCallbackHandler />} /> 
 
           {/* Защищенные маршруты, использующие MainLayout */}
           <Route 
