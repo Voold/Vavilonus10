@@ -1,0 +1,87 @@
+.container {
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.title {
+    color: var(--title-color);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.icon {
+    color: var(--color-red);
+}
+
+.description {
+    color: var(--sub-title-color);
+    font-size: 0.95rem;
+    margin: 0 0 10px 0;
+    line-height: 1.4;
+}
+
+.textarea {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid var(--color-gray);
+    border-radius: 8px;
+    background-color: var(--sub-bc);
+    color: var(--text-color);
+    font-size: 1rem;
+    resize: vertical;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box; /* Важно для правильной ширины */
+}
+
+.textarea:focus {
+    outline: none;
+    border-color: rgba(var(--val-red), 1);
+    box-shadow: 0 0 0 1px rgba(var(--val-red), 0.5);
+}
+
+.saveButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background-color: var(--color-red);
+    color: var(--only-white);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+}
+
+.saveButton:hover {
+    background-color: var(--dark-red);
+}
+
+.saveButton:disabled {
+    background-color: var(--color-gray);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.infoBox {
+    padding: 10px;
+    border: 1px solid var(--light-green);
+    background-color: rgba(var(--light-green), 0.1);
+    color: var(--dark-green);
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.loading {
+    color: var(--sub-title-color);
+    font-style: italic;
+    padding: 20px 0;
+}
