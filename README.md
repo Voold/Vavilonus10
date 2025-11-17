@@ -40,7 +40,7 @@
 ## 💻 Технологический Стек
 
 * **Frontend Core:** React 18, TypeScript, Vite
-* **Стилизация:** Tailwind CSS, PostCSS
+* **Стилизация:** Module CSS
 * **API:** Axios, React Router DOM
 * **Иконки:** Lucide React
 * **Инструменты:** ESLint, TypeScript ESLint
