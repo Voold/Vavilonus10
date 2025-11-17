@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, status, Request
+from fastapi import FastAPI, HTTPException, status, Request  # <-- Импорт Request
 from starlette.responses import JSONResponse, RedirectResponse
 import httpx
 from dotenv import load_dotenv
@@ -8,11 +8,15 @@ import secrets
 import hashlib
 import base64
 from datetime import datetime, timedelta, timezone
-from typing import Optional
+from typing import Optional, Dict
 
 # --- Импорты для JWT ---
-from jose import jwt, jwe
+from jose import jwt
 from jose.exceptions import JWTError
+
+# --- Импорт для работы с БД ---
+# Убедитесь, что database.py содержит get_user_by_internal_id
+from database import initialize_db, save_or_update_user, get_user_by_vk_id, get_user_by_internal_id
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -20,10 +24,9 @@ logger = logging.getLogger(__name__)
 
 # --- Конфигурация ---
 load_dotenv()
-app = FastAPI(title="VKAuthService with JWT")
+app = FastAPI(title="VKAuthService with JWT and SQLite")
 
 # --- JWT Конфигурация ---
-# Используем VK_CLIENT_SECRET для подписи токенов
 JWT_SECRET_KEY = os.getenv('VK_CLIENT_SECRET', 'super-secret-key-fallback')
 ALGORITHM = "HS256"
 
@@ -32,8 +35,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 30
 
 # Параметры VK ID
-PUBLIC_HTTPS_URL = os.getenv('PUBLIC_HTTPS_URL',
-                             'http://127.0.0.1:8001')  # Взято из оригинального кода, но лучше вынести в .env
+PUBLIC_HTTPS_URL = os.getenv('PUBLIC_HTTPS_URL', 'http://127.0.0.1:8001')
 VK_CLIENT_ID = os.getenv('VK_CLIENT_ID')
 VK_CLIENT_SECRET = os.getenv('VK_CLIENT_SECRET')
 REDIRECT_URI = f'{PUBLIC_HTTPS_URL}/auth/vk/callback'
@@ -47,7 +49,15 @@ VK_USER_INFO_URL = 'https://id.vk.ru/oauth2/user_info'
 VK_SCOPE = 'email phone'
 
 
-# --- Вспомогательные функции для PKCE и State ---
+# --- Инициализация БД при старте ---
+@app.on_event("startup")
+async def startup_event():
+    """Вызывается при запуске приложения."""
+    initialize_db()
+# ------------------------------------
+
+
+# --- Вспомогательные функции для PKCE и JWT ---
 
 def generate_code_verifier() -> str:
     """Генерирует code_verifier для PKCE"""
@@ -61,14 +71,12 @@ def generate_code_challenge(verifier: str) -> str:
 
 
 def generate_state() -> str:
-    """Генерирует случайный state (минимум 32 символа)"""
+    """Генерирует случайный state"""
     return secrets.token_urlsafe(32)
 
 
-# --- Вспомогательные функции для JWT ---
-
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
-    """Создает Access Token с полезной нагрузкой и временем жизни"""
+    """Создает Access Token"""
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
@@ -80,13 +88,12 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 
 
 def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
-    """Создает Refresh Token с полезной нагрузкой и временем жизни"""
+    """Создает Refresh Token"""
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
         expire = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
-    # Refresh токен должен иметь уникальный ID (JTI) для отзыва
     to_encode.update({"exp": expire, "token_type": "refresh", "jti": secrets.token_urlsafe(16)})
     encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
@@ -114,22 +121,14 @@ def home():
 
 
 @app.get('/auth/vk/login')
-async def login_via_vk(request: Request):
+async def login_via_vk():
     """
-    Шаг 1: Перенаправление пользователя на страницу авторизации VK ID
-
-    ВНИМАНИЕ: Для работы необходимо, чтобы фронтенд сохранил code_verifier и state
-    перед перенаправлением. В реальном приложении это делается либо через
-    шифрование в URL, либо через сохранение на стороне клиента (например, в localStorage).
-    Здесь я использую простейший метод - возвращаю их в JSON. Фронтенд должен их
-    сохранить и вернуть в /auth/vk/callback.
+    Шаг 1: Возвращает URL для перенаправления и PKCE-параметры.
     """
-    # Генерируем PKCE параметры
     code_verifier = generate_code_verifier()
     code_challenge = generate_code_challenge(code_verifier)
     state = generate_state()
 
-    # Формируем URL авторизации
     auth_params = {
         'response_type': 'code',
         'client_id': VK_CLIENT_ID,
@@ -140,13 +139,10 @@ async def login_via_vk(request: Request):
         'code_challenge_method': 'S256'
     }
 
-    # Создаем URL с параметрами
     auth_url = f"{VK_AUTHORIZE_URL}?{'&'.join([f'{k}={v}' for k, v in auth_params.items()])}"
 
     logger.info(f"Returning VK ID Auth URL: {auth_url}")
 
-    # Фронтенд должен получить эти данные, сохранить verifier/state
-    # и перенаправить пользователя на auth_url
     return {
         "auth_url": auth_url,
         "code_verifier": code_verifier,
@@ -156,24 +152,15 @@ async def login_via_vk(request: Request):
 
 @app.get('/auth/vk/callback')
 async def vk_callback(
+        request: Request,  # <-- ИСПРАВЛЕНИЕ: Добавлен request
         code: Optional[str] = None,
         state: Optional[str] = None,
         error: Optional[str] = None
 ):
     """
-    Шаг 2: Обработка callback от VK ID, обмен кода на токены.
-
-    ВНИМАНИЕ: Фронтенд должен получить code и state из URL-параметров VK ID,
-    а также вернуть code_verifier и state, полученные на шаге /auth/vk/login,
-    в теле запроса POST /auth/vk/exchange (новый подход)
-
-    Для простоты, я оставлю GET /auth/vk/callback, но теперь он будет
-    только возвращать код и требовать, чтобы фронтенд сделал следующий шаг.
+    Шаг 2: Принимает callback от VK ID. Возвращает code и state.
     """
 
-    # Фронтенд должен теперь сам сделать POST-запрос на новый эндпоинт,
-    # передав code, state, code_verifier.
-    # Этот эндпоинт просто возвращает данные, полученные от VK ID.
     if error:
         error_description = request.query_params.get('error_description', 'Неизвестная ошибка')
         logger.error(f"VK ID Authorization Error: {error} - {error_description}")
@@ -189,7 +176,6 @@ async def vk_callback(
             "state": state
         }
 
-    # Если зайти напрямую
     return {"detail": "Некорректный вызов callback"}
 
 
@@ -197,10 +183,10 @@ async def vk_callback(
 async def vk_exchange(
         code: str,
         state: str,
-        code_verifier: str  # code_verifier и state должны быть сохранены фронтендом и возвращены
+        code_verifier: str
 ):
     """
-    Шаг 3: Обмен кода на Access Token и Refresh Token
+    Шаг 3: Обмен кода на Access Token и Refresh Token, сохранение в БД.
     """
 
     # 1. Обмен кода на токен VK ID
@@ -223,8 +209,6 @@ async def vk_exchange(
             response.raise_for_status()
             token_response = response.json()
 
-            logger.info(f"VK ID Token received: {token_response}")
-
             vk_access_token = token_response.get('access_token')
             vk_user_id = token_response.get('user_id')
 
@@ -244,7 +228,7 @@ async def vk_exchange(
             content={"detail": f"Внутренняя ошибка при обмене кода: {e}"}
         )
 
-    # 2. Получение информации о пользователе
+    # 2. Получение информации о пользователе VK
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             user_info_data = {
@@ -274,18 +258,36 @@ async def vk_exchange(
             content={"detail": f"Внутренняя ошибка при запросе данных пользователя: {e}"}
         )
 
-    # 3. Генерация наших JWT токенов
-    user_payload = {
-        "sub": str(user_data.get('user_id')),
+    # 3. Сохранение и обновление данных в SQLite
+    user_data_from_vk = {
+        "user_id": user_data.get('user_id'),
+        "first_name": user_data.get('first_name'),
+        "last_name": user_data.get('last_name'),
+        "full_name": f"{user_data.get('first_name', '')} {user_data.get('last_name', '')}",
         "email": user_data.get('email'),
-        "full_name": f"{user_data.get('first_name', '')} {user_data.get('last_name', '')}"
-        # Добавьте сюда другие данные, необходимые для Access Token
+        "phone": user_data.get('phone'),
+        "avatar": user_data.get('avatar'),
+        "sex": user_data.get('sex'),
+        "birthday": user_data.get('birthday'),
+        "verified": user_data.get('verified'),
+    }
+
+    internal_id = save_or_update_user(user_data_from_vk)
+    full_db_user_data = get_user_by_internal_id(str(internal_id))  # Используем исправленный импорт
+
+    # 4. Генерация наших JWT токенов
+    user_payload = {
+        "sub": str(internal_id),
+        "vk_id": str(user_data.get('user_id')),
+        "email": full_db_user_data.get('email'),
+        "full_name": full_db_user_data.get('full_name'),
+        "role": full_db_user_data.get('role')
     }
 
     access_token = create_access_token(user_payload)
-    refresh_token = create_refresh_token({"sub": user_payload["sub"]})
+    refresh_token = create_refresh_token({"sub": str(internal_id)})
 
-    # 4. Финальный ответ фронтенду
+    # 5. Финальный ответ фронтенду
     return {
         "message": "Авторизация успешна. Выданы JWT токены.",
         "access_token": access_token,
@@ -293,9 +295,12 @@ async def vk_exchange(
         "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         "refresh_token": refresh_token,
         "user": {
-            "vk_id": user_data.get('user_id'),
-            "email": user_data.get('email'),
-            "full_name": user_payload["full_name"]
+            "internal_id": internal_id,
+            "vk_id": full_db_user_data.get('vk_id'),
+            "email": full_db_user_data.get('email'),
+            "full_name": full_db_user_data.get('full_name'),
+            "role": full_db_user_data.get('role'),
+            "inn": full_db_user_data.get('inn')
         }
     }
 
@@ -304,7 +309,6 @@ async def vk_exchange(
 async def refresh_tokens(refresh_token: str):
     """
     Обмен Refresh Token на новую пару Access и Refresh токенов.
-    В идеале, здесь должна быть проверка токена в базе данных на предмет отзыва.
     """
 
     # 1. Декодируем и проверяем Refresh Token
@@ -313,7 +317,7 @@ async def refresh_tokens(refresh_token: str):
         if payload.get("token_type") != "refresh":
             raise JWTError("Ожидался Refresh Token.")
 
-        user_id = payload.get("sub")
+        user_id = payload.get("sub")  # internal_id
         if not user_id:
             raise JWTError("Отсутствует ID пользователя в токене.")
 
@@ -324,17 +328,27 @@ async def refresh_tokens(refresh_token: str):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # 2. Генерируем новые токены
-    # Полезная нагрузка для нового Access Token (в идеале, нужно подтянуть свежие данные)
+    # 2. Получаем данные пользователя по внутреннему ID из БД
+    db_user = get_user_by_internal_id(user_id)  # Используем исправленный импорт
+
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Пользователь не найден в базе данных.",
+        )
+
+    # 3. Генерируем новые токены
     new_access_payload = {
         "sub": user_id,
-        "full_name": "User Name Placeholder"  # В реальном приложении подтягиваются данные
+        "vk_id": db_user['vk_id'],
+        "full_name": db_user['full_name'],
+        "role": db_user['role']
     }
 
     new_access_token = create_access_token(new_access_payload)
     new_refresh_token = create_refresh_token({"sub": user_id})
 
-    # 3. Возвращаем новую пару
+    # 4. Возвращаем новую пару
     return {
         "message": "Токены успешно обновлены.",
         "access_token": new_access_token,
@@ -348,7 +362,7 @@ async def refresh_tokens(refresh_token: str):
 @app.get('/api/protected')
 async def protected_route(request: Request):
     """
-    Пример защищенного маршрута, требующего Access Token в заголовке Authorization: Bearer <token>
+    Пример защищенного маршрута, требующего Access Token.
     """
     auth_header = request.headers.get('Authorization')
     if not auth_header or not auth_header.startswith('Bearer '):
@@ -370,6 +384,8 @@ async def protected_route(request: Request):
         return {
             "message": "Доступ разрешен",
             "user_id": user_id,
+            "role": payload.get("role"),
+            "full_name": payload.get("full_name"),
             "token_payload": payload
         }
     except HTTPException as e:

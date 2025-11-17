@@ -4,3 +4,4 @@ uvicorn
 httpx
 python-dotenv
 python-jose[cryptography] # Добавлено для работы с JWT
+sqlite3
